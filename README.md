@@ -20,3 +20,4 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 ### TODO:
 - check spelling
 - tests
+- when deleteing last task in list a blank line remains

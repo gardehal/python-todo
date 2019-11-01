@@ -44,12 +44,14 @@ class Main:
                 if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
                     taskList = sys.argv[argIndex + 2]
                     optionalArgIndex += 1
-                if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
-                    resetChecked = sys.argv[argIndex + 3]
-                    optionalArgIndex += 1
-                # if(argC > argIndex + 4 and sys.argv[argIndex + 4][0] != "-"):
-                #     resetChecked = sys.argv[argIndex + 3]
-                #     optionalArgIndex += 1
+
+                    if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
+                        resetChecked = sys.argv[argIndex + 3]
+                        optionalArgIndex += 1
+
+                        # if(argC > argIndex + 4 and sys.argv[argIndex + 4][0] != "-"):
+                        #     resetChecked = sys.argv[argIndex + 3]
+                        #     optionalArgIndex += 1
                     
                 saveRes = Main.addTask(task, taskList, taskListPath)
                 print("Add task " + ("was successful." if saveRes else "failed."))
@@ -70,9 +72,10 @@ class Main:
                 if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
                     taskList = sys.argv[argIndex + 2]
                     optionalArgIndex += 1
-                if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
-                    resetChecked = sys.argv[argIndex + 3]
-                    optionalArgIndex += 1
+
+                    if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
+                        resetChecked = sys.argv[argIndex + 3]
+                        optionalArgIndex += 1
 
                 delRes = Main.editTask(taskNumber, taskList, taskListPath, "delete", "w")
                 print(("Successfully" if delRes else "Failed to") + " delete task.")
@@ -93,9 +96,10 @@ class Main:
                 if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
                     taskList = sys.argv[argIndex + 2]
                     optionalArgIndex += 1
-                if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
-                    resetChecked = sys.argv[argIndex + 3]
-                    optionalArgIndex += 1
+
+                    if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
+                        resetChecked = sys.argv[argIndex + 3]
+                        optionalArgIndex += 1
 
                 tickRes = Main.editTask(taskNumber, taskList, taskListPath, "tick", "w")
                 print(("Successfully" if tickRes else "Failed to") + " tick task.")
@@ -220,7 +224,7 @@ class Main:
         if(len(fileArray) == 0):
             print("The task list " + taskList + " is empty.")
             quit()
-        if(taskNumber < 0 or taskNumber > len(fileArray)):
+        if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
             print("Invalid task number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
             quit()
 

@@ -1,7 +1,5 @@
-0 sleep
-0 yes
-0 task
+1 sleep
+1 yes
 0 task
 0 task2
 0 task3
-0 test4
