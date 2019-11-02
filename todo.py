@@ -1,6 +1,7 @@
 import sys
 import time
-import os 
+import os
+import tests
 
 class Main:
     def main():
@@ -120,12 +121,24 @@ class Main:
                 Main.printHelp()
                 quit()
 
+            # Tests
+            elif(arg == "-test"):
+                useBeforeAfter = 1
+
+                if(argC > argIndex + 1 and sys.argv[argIndex + 1][0] != "-"):
+                    useBeforeAfter = int(sys.argv[argIndex + 1])
+                    
+                tests.Tests.runTests(useBeforeAfter)
+                quit()
+
             # Invalid, inform and quit
             else:
                 print("Argument not recognized: \"" + arg + "\", please see documentation or run with \"-help\" for help.")
-                quit()
 
             argIndex += 1
+
+        if(argC < 2):
+            Main.printList(taskList, taskListPath)
 
         print("\nend")
 
