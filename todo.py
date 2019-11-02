@@ -1,6 +1,7 @@
 import sys
 import time
 import os
+
 import tests
 
 class Main:
@@ -169,6 +170,8 @@ class Main:
         try:
             with open(fullPath, "r") as file:
                 fileExists = True
+
+            file.close()
         except FileNotFoundError:
             fileExists = False
 
@@ -185,13 +188,14 @@ class Main:
 
             file.close() 
             return True
-        except:
-            print("Error saving task list " + taskList)
+        except Exception as e:
+            print("\naddTask error:")
+            print(e)
             return False
 
     def loadTaskList(taskList, taskListPath):
         """ 
-        ???. \n
+        A method that reads file and returns an array of the content. \n
         string taskList \n
         string taskListPath
         """
@@ -205,8 +209,10 @@ class Main:
                     res.append(line)
 
             file.close() 
-        except:
+        except Exception as e:
             print("Error loading task list " + taskList)
+            print("\nloadTaskList error: ")
+            print(e)
 
         return res
 
@@ -230,8 +236,9 @@ class Main:
                     fileArray.append(line)
 
             readFile.close()
-        except:
-            print("Error reading file.")
+        except Exception as e:
+            print("\neditTask readFile error:")
+            print(e)
             return False
 
         if(len(fileArray) == 0):
@@ -262,8 +269,9 @@ class Main:
 
             writeFile.close() 
             return True
-        except:
-            print("Error writing to file.")
+        except Exception as e:
+            print("\neditTask writeFile error:")
+            print(e)
             return False
 
     def setList(taskList, taskListPath):
