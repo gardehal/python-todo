@@ -4,6 +4,15 @@ import os
 
 import tests
 
+listArgs = ["-list", "-ls"]
+addArgs = ["-add", "-a"]
+deleteArgs = ["-delete", "-d"]
+checkArgs = ["-check", "-c", "-x", "-tick", "-t"]
+switchArgs = ["-switch", "-s"]
+changeListArgs = ["-changelist", "-cl"]
+helpArgs = ["-help", "-h"]
+testArgs = ["-test"]
+
 class Main:
     def main():
         # Defaults
@@ -14,26 +23,27 @@ class Main:
 
         # TODO: groom/trigger reset
 
+
         argC = len(sys.argv)
         argIndex = 1
         while argIndex < argC:
-            arg = sys.argv[argIndex]
+            arg = sys.argv[argIndex].lower()
 
             # List curret todo list ()
-            if(arg == "-list" or arg == "-ls"):
+            if(arg in listArgs):
                 Main.printList(taskList, taskListPath)
                 argIndex += 1
                 continue
 
             # Add a task
-            elif(arg == "-add" or arg == "-a"):
+            elif(arg in addArgs):
                 if(argC - argIndex < 2):
-                    print("Too few arguments to save task, need at least 1: task (string), tasklist (string)(optional), resetChecked (enum)(optional)")
+                    print("Too few arguments to save task, need at least 1: task (string), resetChecked (enum)(optional)")
                     quit()
 
                 task = sys.argv[argIndex + 1]
 
-                # reset args?
+                # TODO: reset args for automatically resetting the "completed" value after a predefined time, consider having a interval and a datetime so the reset triggers on an interval from datetime given
                 # hour reset after completed easiest? h 2 -> write Z or T + datetime first in line, when next list is called, check timestamp, compare to reset time in args, 
                 #   if past, uncheck (or better set utc datetime + reset time check if datetime is current or in past, if yes, uncheck)
                 # datetime?
@@ -41,19 +51,10 @@ class Main:
                 # give datetime + interval, or just interval (datetime = now). When interval interact with datetime, reset, then set new datetime = old datetime + interval?
                     # better to set datetime + interval = datetimeTriggerAlert? vs check datet
 
-                # Optional arguments, tasklist (file) and path
                 optionalArgIndex = 0
-                if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
-                    taskList = sys.argv[argIndex + 2]
+                if(argC > argIndex + 3 and sys.argv[argIndex + 2][0] != "-"):
+                    resetChecked = sys.argv[argIndex + 2]
                     optionalArgIndex += 1
-
-                    if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
-                        resetChecked = sys.argv[argIndex + 3]
-                        optionalArgIndex += 1
-
-                        # if(argC > argIndex + 4 and sys.argv[argIndex + 4][0] != "-"):
-                        #     resetChecked = sys.argv[argIndex + 3]
-                        #     optionalArgIndex += 1
                     
                 saveRes = Main.addTask(task, taskList, taskListPath)
                 print("Add task " + ("was successful." if saveRes else "failed."))
@@ -62,68 +63,48 @@ class Main:
                 continue
 
             # Delete a task
-            elif(arg == "-delete" or arg == "-d"):
+            elif(arg in deleteArgs):
                 if(argC - argIndex < 2):
-                    print("Too few arguments to save task, need at least 1: tasknumber (int), tasklist (string)(optional), taskListPath (string)(optional)")
+                    print("Too few arguments to save task, need at least 1: tasknumber (int)")
                     quit()
                 
                 taskNumber = int(sys.argv[argIndex + 1]) - 1
-
-                # Optional arguments, tasklist (file) and path
-                optionalArgIndex = 0
-                if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
-                    taskList = sys.argv[argIndex + 2]
-                    optionalArgIndex += 1
-
-                    if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
-                        resetChecked = sys.argv[argIndex + 3]
-                        optionalArgIndex += 1
 
                 delRes = Main.editTask(taskNumber, taskList, taskListPath, "delete", "w")
                 print(("Successfully" if delRes else "Failed to") + " delete task.")
 
-                argIndex += 2 + optionalArgIndex
+                argIndex += 2
                 continue
 
             # Toggle check/tick off a task (mark as done)
-            elif(arg == "-check" or arg == "-c" or arg == "-x" or arg == "-tick" or arg == "-t"):
+            elif(arg in checkArgs):
                 if(argC - argIndex < 2):
-                    print("Too few arguments to save task, need at least 1: tasknumber (int), tasklist (string)(optional), taskListPath (string)(optional)")
+                    print("Too few arguments to save task, need at least 1: tasknumber (int)")
                     quit()
                 
                 taskNumber = int(sys.argv[argIndex + 1]) - 1
 
-                # Optional arguments, tasklist (file) and path
-                optionalArgIndex = 0
-                if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
-                    taskList = sys.argv[argIndex + 2]
-                    optionalArgIndex += 1
-
-                    if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
-                        resetChecked = sys.argv[argIndex + 3]
-                        optionalArgIndex += 1
-
                 tickRes = Main.editTask(taskNumber, taskList, taskListPath, "tick", "w")
                 print(("Successfully" if tickRes else "Failed to") + " tick task.")
 
-                argIndex += 2 + optionalArgIndex
+                argIndex += 2
                 continue
 
-            # Change list of tasks
-            elif(arg == "-changeList" or arg == "-cl"):
-                print("cl")
-
             # Switch tasks position
-            elif(arg == "-switch" or arg == "-s"):
+            elif(arg in switchArgs):
+                print("switch")
+
+            # Change list of tasks
+            elif(arg in changeListArgs):
                 print("cl")
 
             # Help
-            elif(arg == "-h" or arg == "-help"):
+            elif(arg in helpArgs):
                 Main.printHelp()
                 quit()
 
             # Tests
-            elif(arg == "-test"):
+            elif(arg in testArgs):
                 useBeforeAfter = 1
 
                 if(argC > argIndex + 1 and sys.argv[argIndex + 1][0] != "-"):
@@ -154,6 +135,7 @@ class Main:
         appendPath = dirPath
         if(fileName != None):
             appendPath = os.path.join(dirPath, fileName + ".txt")
+            
         return os.path.join(sys.path[0], appendPath)
 
     def addTask(task, taskList, taskListPath):
@@ -216,7 +198,7 @@ class Main:
 
         return res
 
-# idea: a generic editing method can let me add (append), delete, change check status, set new reset time etc
+    # idea: a generic editing method can let me add (append), delete, change check status, set new reset time etc
     def editTask(taskNumber, taskList, taskListPath, action, filePermissions = "rw+"):
         """
         A method editing a tasklist. \n
@@ -255,6 +237,7 @@ class Main:
             fileArray[taskNumber] = ("1" if fileArray[taskNumber][0] == "0" else "0") + fileArray[taskNumber][1:]
         elif(action == "delete"):
             fileArray.pop(taskNumber)
+            fileArray[len(fileArray) - 1] = fileArray[len(fileArray) - 1].rstrip()
         else:
             print("Action not recognized, must be \"tick\", \"delete\"")
             quit()
@@ -294,7 +277,7 @@ class Main:
         if(len(tasks) == 0):
             print("The task list " + taskList + " is empty.")
             quit()
-            
+        
         # Legend for task list
         print("#" + "\t" + "Completed?" + "\t" + "Task name" + "\t" + "Next reset")
 
@@ -308,12 +291,35 @@ class Main:
             # if(task[1][0] == "Z"):
             #     taskReset = task[1]
 
-            taskCompleted = "Yes" if task[0] == "1" else "No"
-            taskText = task[1:]
+            try:
+                taskCompleted = "Yes" if task[0] == "1" else "No"
+                taskText = task[1:]
+                
+                print(str(index + 1) + "\t" + str(taskCompleted) + "\t\t" + str(taskText) + "\t" + str(taskReset))
+            except:
+                # Malformed line, attempt to fix it, if it's empty, remove it.
+                # if(len(task) > 0):
+                #     tasks[index] = ((task[0] + " " + task[1:]) if type(task[0]) == int else ("0 " + task[1:]))
 
-            print(str(index + 1) + "\t" + str(taskCompleted) + "\t\t" + str(taskText) + "\t" + str(taskReset))
+                # Understand the problem with the line
+                # Try to repair the line
+                # Save the line (addTask)
+                # Put the task in the right place (switch? or insert with custom code)
+
+                print("This task, number " + str(index + 1) + " was malformed. Consider delete and add it again, the text is: \"" + task + "\"")
+                index +=1
+                continue
+
             index += 1
 
+    # listArgs = ["-list", "-ls"]
+    # addArgs = ["-add", "-a"]
+    # deleteArgs = ["-delete", "-d"]
+    # checkArgs = ["-check", "-c", "-x", "-tick", "-t"]
+    # switchArgs = ["-switch", "-s"]
+    # changeListArgs = ["-changelist", "-cl"]
+    # helpArgs = ["-help", "-h"]
+    # testArgs = ["-test"]
 
     def printHelp():
         """
@@ -321,6 +327,21 @@ class Main:
         """
 
         print("--- Help ---")
+        print("Arguments marked with ? are optional.")
+        print("All arguments that triggers a function start with dash(-).")
+        print("All arguments must be separated by space only.")
+        print("To submit sentences with spaces beween words, use quotation marks (\", \'), othwerwise they will be counted as separate arguments.")
+        print("\te.g.: $ python todo.py -add \"This is a sentence.\"")
+        print("\n")
+
+        print(str(listArgs) + ": prints an indexed list of tasks in the current task list.")
+        print(str(addArgs) + " + string + ?taskList: adds the following string to the current task list.")
+        print(str(deleteArgs) + " + number + ?taskList: deletes the corresponding task in the current task list.")
+        print(str(checkArgs) + " + number: toggle the completetion of the corresponding task in the current task list.")
+        print(str(switchArgs) + "+ number + number: switches the position of the two corresponding tasks in the current task list.")
+        print(str(changeListArgs) + ": string: changes the current task list to the string given.")
+        print(str(helpArgs) + ": prints this information about input arguments.")
+        print(str(testArgs) + ": runs unit tests and prints the result.")
             
 if __name__ == "__main__":
     Main.main()
