@@ -48,12 +48,17 @@ class Tests:
         Tests.after(useBeforeAfter)
         testloadFileOneTaskRes = Tests.testloadFileOneTask()
         Tests.after(useBeforeAfter)
-
+        testSetListNoFileRes = Tests.testSetListNoFile()
+        Tests.after(useBeforeAfter)
+        testSetListToSameListRes = Tests.testSetListToSameList()
+        Tests.after(useBeforeAfter)
+        
         getFullFilePathRes = testGetFullFilePathDirectoryRes + testGetFullFilePathDirectoryAndFileRes
         getCurrentTaskListRes = testGetCurrentTaskListNoFileRes + testGetCurrentTaskListFileExistsRes
         addTaskRes = testAddTaskEmptyListRes + testAddTaskFaultyFileRes + testAddTaskNoFileRes + testAddTaskNewTaskSameTaskListRes 
         loadFileRes = testloadFileNoListRes + testloadFileEmptyListRes + testloadFileOneTaskRes
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes
+        setListRes = testSetListNoFileRes + testSetListToSameListRes
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -61,21 +66,27 @@ class Tests:
 
         # Print
         print("The results of the tests are: \n")
-        print("testGetFullFilePathDirectory \t\t" + ("passed" if testGetFullFilePathDirectoryRes == 0 else "failed"))
-        print("testGetFullFilePathDirectoryAndFile \t" + ("passed" if testGetFullFilePathDirectoryAndFileRes == 0 else "failed"))
-        print("testGetCurrentTaskListNoFile \t\t" + ("passed" if testGetCurrentTaskListNoFileRes == 0 else "failed"))
-        print("testGetCurrentTaskListFileExists \t" + ("passed" if testGetCurrentTaskListFileExistsRes == 0 else "failed"))
-        print("testAddTaskEmptyList \t\t\t" + ("passed" if testAddTaskEmptyListRes == 0 else "failed"))
-        print("testAddTaskFaultyFile \t\t\t" + ("passed" if testAddTaskFaultyFileRes == 0 else "failed"))
-        print("testAddTaskNoFile \t\t\t" + ("passed" if testAddTaskNoFileRes == 0 else "failed"))
-        print("testAddTaskNewTaskSameTaskList \t\t" + ("passed" if testAddTaskNewTaskSameTaskListRes == 0 else "failed"))
-        print("testloadFileNoList \t\t\t" + ("passed" if testloadFileNoListRes == 0 else "failed"))
-        print("testloadFileEmptyList \t\t\t" + ("passed" if testloadFileEmptyListRes == 0 else "failed"))
-        print("testloadFileOneTask \t\t\t" + ("passed" if testloadFileOneTaskRes == 0 else "failed"))
+        Tests.printTestResult(testGetFullFilePathDirectoryRes, "testGetFullFilePathDirectory")
+        Tests.printTestResult(testGetFullFilePathDirectoryAndFileRes, "testGetFullFilePathDirectoryAndFile")
+        Tests.printTestResult(testGetCurrentTaskListNoFileRes, "testGetCurrentTaskListNoFile")
+        Tests.printTestResult(testGetCurrentTaskListFileExistsRes, "testGetCurrentTaskListFileExists")
+        Tests.printTestResult(testAddTaskEmptyListRes, "testAddTaskEmptyList")
+        Tests.printTestResult(testAddTaskFaultyFileRes, "testAddTaskFaultyFile")
+        Tests.printTestResult(testAddTaskNoFileRes, "testAddTaskNoFile")
+        Tests.printTestResult(testAddTaskNewTaskSameTaskListRes, "testAddTaskNewTaskSameTaskList")
+        Tests.printTestResult(testloadFileNoListRes, "testloadFileNoList")
+        Tests.printTestResult(testloadFileEmptyListRes, "testloadFileEmptyList")
+        Tests.printTestResult(testloadFileOneTaskRes, "testloadFileOneTask")
+        Tests.printTestResult(testSetListNoFileRes, "testSetListNoFile")
+        Tests.printTestResult(testSetListToSameListRes, "testSetListToSameList")
 
         print("\n" + ("All tests passed." if finalRes == 0 else "Some tests failed."))
         if(useBeforeAfter == 0):
             print("If some tests fail, try to run with before/after methods enabled, they are currently not; \n\t$ python todo.py -test")
+
+    def printTestResult(result, testName):
+        resultString = ("Passed\t\t" if result == 0 else "\tFailed\t")
+        print(resultString + " - " + testName)
 
     def before(useBeforeAfter):
         """
@@ -407,5 +418,95 @@ class Tests:
 
         if(type(fileRes) == list and len(fileRes) == 1 and fileRes[0] == task):
             return 0
+
+        return 1
+
+    def testSetListNoFile():
+        """
+        Test setList with no pre-exisiting file. The should return true and create a file and write the newList into it as the only line.
+        """
+
+        newList = "setListNoFile list"
+
+        filePath = os.path.join(sys.path[0], testAllTaskListsFileName) + ".txt"
+        if(os.path.isfile(filePath)):
+            return 1
+
+        setRes = todo.Main.setList(newList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
+
+        fileRes = []
+        try:
+            with open(filePath, "r") as file:
+                for line in file:
+                    fileRes.append(line)
+
+            file.close()
+        except Exception as e:
+            print("\nsetListNoFile error: ")
+            print(e)
+            return 1
+
+        fileCheck = len(fileRes) == 1 and fileRes[0] == newList
+
+        if(setRes and os.path.isfile(filePath) and fileCheck):
+            return 0
+
+        return 1
+
+    def testSetListToSameList():
+        """
+        Test setList for overriding a existing tasklist in a file. Should return true, and the newList should be the only line in the file.
+        """
+
+        oldList = "some other list"
+        newList = "setListToSameList list"
+
+        filePath = os.path.join(sys.path[0], testAllTaskListsFileName) + ".txt"
+        
+        try:
+            with open(filePath, "a") as file:
+                file.write(oldList)
+
+            file.close()
+        except Exception as e:
+            print("\nsetListNoFile error: ")
+            print(e)
+            return 1
+
+        if(not os.path.isfile(filePath)):
+            return 1
+
+        setRes = todo.Main.setList(newList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
+
+        fileRes = []
+        try:
+            with open(filePath, "r") as file:
+                for line in file:
+                    fileRes.append(line)
+
+            file.close()
+        except Exception as e:
+            print("\nsetListNoFile error: ")
+            print(e)
+            return 1
+
+        fileCheck = len(fileRes) == 1 and fileRes[0] == newList
+
+        if(setRes and os.path.isfile(filePath) and fileCheck):
+            return 0
+
+        return 1
+        
+    # no file
+    # non existent action argument
+    # bad file name
+    # normal file tick
+    # normal file delete
+    # normal file switch
+    # faulty task index (switch number)
+    # faulty task index (task number)
+    def testEditTask():
+        """
+        """
 
         return 1

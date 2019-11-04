@@ -9,7 +9,7 @@ addArgs = ["-add", "-a"]
 deleteArgs = ["-delete", "-d"]
 checkArgs = ["-check", "-c", "-x", "-tick", "-t"]
 switchArgs = ["-switch", "-s"]
-changeListArgs = ["-changelist", "-cl"]
+setListArgs = ["-setlist", "-sl"]
 helpArgs = ["-help", "-h"]
 testArgs = ["-test"]
 
@@ -72,7 +72,7 @@ class Main:
                 
                 taskNumber = int(sys.argv[argIndex + 1]) - 1
 
-                delRes = Main.editTask(taskNumber, taskList, taskListPath, "delete", "w")
+                delRes = Main.editTask([taskNumber], taskList, taskListPath, "delete", "w")
                 print(("Successfully" if delRes else "Failed to") + " delete task.")
 
                 argIndex += 2
@@ -81,12 +81,12 @@ class Main:
             # Toggle check/tick off a task (mark as done)
             elif(arg in checkArgs):
                 if(argC - argIndex < 2):
-                    print("Too few arguments to save task, need at least 1: tasknumber (int)")
+                    print("Too few arguments to tick task, need at least 1: tasknumber (int)")
                     quit()
                 
                 taskNumber = int(sys.argv[argIndex + 1]) - 1
 
-                tickRes = Main.editTask(taskNumber, taskList, taskListPath, "tick", "w")
+                tickRes = Main.editTask([taskNumber], taskList, taskListPath, "tick", "w")
                 print(("Successfully" if tickRes else "Failed to") + " tick task.")
 
                 argIndex += 2
@@ -94,11 +94,31 @@ class Main:
 
             # Switch tasks position
             elif(arg in switchArgs):
-                print("switch")
+                if(argC - argIndex < 3):
+                    print("Too few arguments to switch task, need at least 2: tasknumber (int), switchnumber (int)")
+                    quit()
 
-            # Change list of tasks
-            elif(arg in changeListArgs):
-                print("cl")
+                taskNumber = int(sys.argv[argIndex + 1]) - 1
+                switchNumber = int(sys.argv[argIndex + 2]) - 1
+                
+                switchRes = Main.editTask([taskNumber, switchNumber], taskList, taskListPath, "switch", "w")
+                print(("Successfully" if switchRes else "Failed to") + " switched tasks.")
+
+                argIndex += 3
+                continue
+
+            # Set the current list of tasks
+            elif(arg in setListArgs):
+                if(argC - argIndex < 2):
+                    print("Too few arguments to save task, need at least 1: task list (string)")
+                    quit()
+                    
+                newTaskList = sys.argv[argIndex + 1]
+                setRes = Main.setList(newTaskList, allTaskListsFileName, allTaskListsPath)
+                print(("Successfully" if setRes else "Failed to") + " set task list to " + newTaskList + ".")
+
+                argIndex += 2
+                continue
 
             # Help
             elif(arg in helpArgs):
@@ -140,7 +160,6 @@ class Main:
 
         return os.path.join(sys.path[0], appendPath)
 
-        
     def getCurrentTaskList(allTaskListsFileName, allTaskListsPath, defaultTaskListName = "default"):
         """
         A method for returning the current tasklist used (first result in file allTaskListsFileName). If there is no file, this will make one. \n
@@ -228,11 +247,10 @@ class Main:
 
         return res
 
-    # idea: a generic editing method can let me add (append), delete, change check status, set new reset time etc
-    def editTask(taskNumber, taskList, taskListPath, action, filePermissions = "rw+"):
+    def editTask(taskRefrence, taskList, taskListPath, action, filePermissions = "rw+"):
         """
         A method editing a tasklist. \n
-        int taskNumber \n
+        int array taskRefrence \n
         string taskList \n
         string taskListPath \n
         string action \n
@@ -257,11 +275,13 @@ class Main:
             print("The task list " + taskList + " is empty.")
             quit()
 
+            
+        taskNumber = int(taskRefrence[0])
+
         if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
             print("Invalid task number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
-            quit()
+            return False
 
-        taskNumber = int(taskNumber)
         # Edit array
         if(action == "tick"):
             fileArray[taskNumber] = ("1" if fileArray[taskNumber][0] == "0" else "0") + fileArray[taskNumber][1:]
@@ -273,9 +293,19 @@ class Main:
             if(taskNumber != 0):
                 fileArray[len(fileArray) - 1] = fileArray[len(fileArray) - 1].rstrip()
 
+        elif(action == "switch"):
+            switchNumber = int(taskRefrence[1])
+            if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
+                print("Invalid switch number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
+                return False
+
+            tmp = fileArray[taskNumber]
+            fileArray[taskNumber] = fileArray[switchNumber]
+            fileArray[switchNumber] = tmp
+
         else:
             print("Action not recognized, must be \"tick\", \"delete\"")
-            quit()
+            return False
 
         # Write back to array
         try:
@@ -292,19 +322,30 @@ class Main:
             print(e)
             return False
 
-    def setList(taskList, taskListPath):
+    def setList(taskList, allTaskListsFileName, allTaskListsPath):
         """
-        A method for changeing current default task list, so a argument to save or read from a list is not necessary. \n
+        A method for setting current task list. \n
         string taskList \n
-        string taskListPath
+        string allTaskListsFileName \n
+        string allTaskListsPath
         """
 
-        # similar to weatherfetech, get current tasklist from a file named something like "currenttasklist"
-        # Should check/create tasklist/file if none exists.
-        # Default list is first line, each list on it's own line, set default is just change positions
-        # Should have a option to print all lists available. (Not needed in the file, however, but best practice?)
+        currentTaskList = Main.getCurrentTaskList(allTaskListsFileName, allTaskListsPath)
+        if(taskList == currentTaskList):
+            return True
 
-        print("--- setList ---")
+        allTaskListsFullPath = Main.getFullFilePath(allTaskListsPath, allTaskListsFileName)
+        try:
+            with open(allTaskListsFullPath, "w") as file:
+                file.write(taskList)
+
+            file.close()
+        except Exception as e:
+            # print("\ntestloadFileEmptyList error: ")
+            # print(e)
+            return False
+
+        return True
 
     def printList(taskList, taskListPath):
         """
@@ -319,6 +360,7 @@ class Main:
             quit()
         
         # Legend for task list
+        print("From task list: " + taskList)
         print("#" + "\t" + "Completed?" + "\t" + "Task name" + "\t" + "Next reset")
 
         nTasks = len(tasks)
@@ -357,7 +399,7 @@ class Main:
     # deleteArgs = ["-delete", "-d"]
     # checkArgs = ["-check", "-c", "-x", "-tick", "-t"]
     # switchArgs = ["-switch", "-s"]
-    # changeListArgs = ["-changelist", "-cl"]
+    # setListArgs = ["-setList", "-sl"]
     # helpArgs = ["-help", "-h"]
     # testArgs = ["-test"]
 
@@ -379,7 +421,7 @@ class Main:
         print(str(deleteArgs) + " + number + ?taskList: deletes the corresponding task in the current task list.")
         print(str(checkArgs) + " + number: toggle the completetion of the corresponding task in the current task list.")
         print(str(switchArgs) + "+ number + number: switches the position of the two corresponding tasks in the current task list.")
-        print(str(changeListArgs) + ": string: changes the current task list to the string given.")
+        print(str(setListArgs) + ": string: sets the current task list to the string given.")
         print(str(helpArgs) + ": prints this information about input arguments.")
         print(str(testArgs) + ": runs unit tests and prints the result.")
             
