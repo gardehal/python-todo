@@ -16,13 +16,15 @@ testArgs = ["-test"]
 class Main:
     def main():
         # Defaults
+        allTaskListsFileName = "all-task-lists"
+        allTaskListsPath = "."
         task = None
-        taskList = "default"
         taskListPath = "tasklists"
         resetChecked = None
 
-        # TODO: groom/trigger reset
+        taskList = Main.getCurrentTaskList(allTaskListsFileName, allTaskListsPath)
 
+        # TODO: groom/trigger reset
 
         argC = len(sys.argv)
         argIndex = 1
@@ -135,8 +137,42 @@ class Main:
         appendPath = dirPath
         if(fileName != None):
             appendPath = os.path.join(dirPath, fileName + ".txt")
-            
+
         return os.path.join(sys.path[0], appendPath)
+
+        
+    def getCurrentTaskList(allTaskListsFileName, allTaskListsPath, defaultTaskListName = "default"):
+        """
+        A method for returning the current tasklist used (first result in file allTaskListsFileName). If there is no file, this will make one. \n
+        string allTaskListsFileName \n
+        string allTaskListsPath \n
+        string defaultTaskListName(optional)
+        """
+
+        allTaskListsRes = Main.loadFile(allTaskListsFileName, allTaskListsPath)
+        fileExists = True if len(allTaskListsRes) > 0 else False
+
+        if(fileExists):
+            return allTaskListsRes[0].rstrip()
+
+        allTaskListsFullPath = Main.getFullFilePath(allTaskListsPath, allTaskListsFileName)
+        try:
+            with open(allTaskListsFullPath, "a") as file:
+                file.write(defaultTaskListName)
+
+            file.close()
+        except Exception as e:
+            # print("\ntestloadFileEmptyList error: ")
+            # print(e)
+            return None
+
+        allTaskListsRes = Main.loadFile(allTaskListsFileName, allTaskListsPath)
+        fileExists = True if len(allTaskListsRes) > 0 else False
+
+        if(fileExists):
+            return allTaskListsRes[0].rstrip()
+
+        return None
 
     def addTask(task, taskList, taskListPath):
         """
@@ -146,22 +182,15 @@ class Main:
         string taskListPath
         """
 
-        fullPath = Main.getFullFilePath(taskListPath, taskList)
-
-        fileExists = False
-        try:
-            with open(fullPath, "r") as file:
-                fileExists = True
-
-            file.close()
-        except FileNotFoundError:
-            fileExists = False
+        loadTaskRes = Main.loadFile(taskList, taskListPath)
+        fileExists = True if len(loadTaskRes) > 0 else False
 
         # If no directory for task lists exist, make one
         taskListDirectory = Main.getFullFilePath(taskListPath)
         if(not os.path.exists(taskListDirectory)):
             os.mkdir(taskListDirectory)
 
+        fullPath = Main.getFullFilePath(taskListPath, taskList)
         taskLine = ("\n" if fileExists else "") + "0 " + task
 
         try:
@@ -175,7 +204,7 @@ class Main:
             print(e)
             return False
 
-    def loadTaskList(taskList, taskListPath):
+    def loadFile(taskList, taskListPath):
         """ 
         A method that reads file and returns an array of the content. \n
         string taskList \n
@@ -192,9 +221,10 @@ class Main:
 
             file.close() 
         except Exception as e:
-            print("Error loading task list " + taskList)
-            print("\nloadTaskList error: ")
-            print(e)
+            # print("Error loading task list " + taskList)
+            # print("\nloadFile error: ")
+            # print(e)
+            uselessVar = True
 
         return res
 
@@ -226,18 +256,23 @@ class Main:
         if(len(fileArray) == 0):
             print("The task list " + taskList + " is empty.")
             quit()
+
         if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
             print("Invalid task number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
             quit()
-
 
         taskNumber = int(taskNumber)
         # Edit array
         if(action == "tick"):
             fileArray[taskNumber] = ("1" if fileArray[taskNumber][0] == "0" else "0") + fileArray[taskNumber][1:]
+
         elif(action == "delete"):
             fileArray.pop(taskNumber)
-            fileArray[len(fileArray) - 1] = fileArray[len(fileArray) - 1].rstrip()
+
+            # Delete first line, no need to strip revious line of newline
+            if(taskNumber != 0):
+                fileArray[len(fileArray) - 1] = fileArray[len(fileArray) - 1].rstrip()
+
         else:
             print("Action not recognized, must be \"tick\", \"delete\"")
             quit()
@@ -264,6 +299,11 @@ class Main:
         string taskListPath
         """
 
+        # similar to weatherfetech, get current tasklist from a file named something like "currenttasklist"
+        # Should check/create tasklist/file if none exists.
+        # Default list is first line, each list on it's own line, set default is just change positions
+        # Should have a option to print all lists available. (Not needed in the file, however, but best practice?)
+
         print("--- setList ---")
 
     def printList(taskList, taskListPath):
@@ -273,7 +313,7 @@ class Main:
         string taskListPath
         """
 
-        tasks = Main.loadTaskList(taskList, taskListPath)
+        tasks = Main.loadFile(taskList, taskListPath)
         if(len(tasks) == 0):
             print("The task list " + taskList + " is empty.")
             quit()

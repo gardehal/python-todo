@@ -19,6 +19,9 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 
 ### TODO:
 - check spelling
-- tests
 - help print + help in readme.md
-- when adding line, don't check on file exist,. check on file len (use load method) (needs another test for blank file)
+- groom/trigger reset functions
+- getCurrentTaskList tests
+- editfile tests
+- set list tests
+- print list tests?
