@@ -24,7 +24,6 @@ class Tests:
             # Disable print function (ignore error prints that pop up while running tests)
             sys.stdout = open(os.devnull, 'w')
 
-        
         # Run tests
         testGetFullFilePathDirectoryRes = Tests.testGetFullFilePathDirectory()
         Tests.after(useBeforeAfter)
@@ -52,13 +51,27 @@ class Tests:
         Tests.after(useBeforeAfter)
         testSetListToSameListRes = Tests.testSetListToSameList()
         Tests.after(useBeforeAfter)
+        testEditTaskNoFileRes = Tests.testEditTaskNoFile()
+        Tests.after(useBeforeAfter)
+        testEditTaskNoActionRes = Tests.testEditTaskNoAction()
+        Tests.after(useBeforeAfter)
+        testEditTaskNoTaskNumberRes = Tests.testEditTaskNoTaskNumber()
+        Tests.after(useBeforeAfter)
+        testEditTaskIllegalNumberRes = Tests.testEditTaskIllegalNumber()
+        Tests.after(useBeforeAfter)
+        testEditTaskCheckMarkMalformedTaskRes = Tests.testEditTaskCheckMarkMalformedTask()
+        Tests.after(useBeforeAfter)
+        testEditTaskCheckMarkTaskRes = Tests.testEditTaskCheckMarkTask()
+        Tests.after(useBeforeAfter)
         
         getFullFilePathRes = testGetFullFilePathDirectoryRes + testGetFullFilePathDirectoryAndFileRes
         getCurrentTaskListRes = testGetCurrentTaskListNoFileRes + testGetCurrentTaskListFileExistsRes
         addTaskRes = testAddTaskEmptyListRes + testAddTaskFaultyFileRes + testAddTaskNoFileRes + testAddTaskNewTaskSameTaskListRes 
         loadFileRes = testloadFileNoListRes + testloadFileEmptyListRes + testloadFileOneTaskRes
         setListRes = testSetListNoFileRes + testSetListToSameListRes
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes
+        editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskCheckMarkMalformedTaskRes
+        editFileRes2 = testEditTaskCheckMarkTaskRes
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -79,8 +92,14 @@ class Tests:
         Tests.printTestResult(testloadFileOneTaskRes, "testloadFileOneTask")
         Tests.printTestResult(testSetListNoFileRes, "testSetListNoFile")
         Tests.printTestResult(testSetListToSameListRes, "testSetListToSameList")
+        Tests.printTestResult(testEditTaskNoFileRes, "testEditTaskNoFile")
+        Tests.printTestResult(testEditTaskNoActionRes, "testEditTaskNoAction")
+        Tests.printTestResult(testEditTaskNoTaskNumberRes, "testEditTaskNoTaskNumber")
+        Tests.printTestResult(testEditTaskIllegalNumberRes, "testEditTaskIllegalNumber")
+        Tests.printTestResult(testEditTaskCheckMarkMalformedTaskRes, "testEditTaskCheckMarkMalformedTask")
+        Tests.printTestResult(testEditTaskCheckMarkTaskRes, "testEditTaskCheckMarkTask")
 
-        print("\n" + ("All tests passed." if finalRes == 0 else "Some tests failed."))
+        print("\n" + ("All tests passed." if finalRes == 0 else (str(finalRes) + " test(s) failed.")))
         if(useBeforeAfter == 0):
             print("If some tests fail, try to run with before/after methods enabled, they are currently not; \n\t$ python todo.py -test")
 
@@ -132,6 +151,55 @@ class Tests:
                 return 1
 
         return 0
+
+    def writeFile(line, fileName, filePath):
+        """
+        Utility method for creating and writing a sigle string line in a new file (permissions "a"). Returns absolute path of file if successful. \n
+        string line \n
+        string fileName \n
+        string filePath
+        """
+
+        dirPath = os.path.join(sys.path[0], filePath)
+        path = os.path.join(dirPath, fileName) + ".txt"
+        
+        if(not os.path.exists(dirPath)):
+            os.mkdir(dirPath)
+
+        try:
+            with open(path, "a") as file:
+                file.write(line) 
+
+            file.close()
+            return path
+        except Exception as e:
+            print("\nwriteFile error: ")
+            print(e)
+            return None
+
+    def readFile(fileName, filePath):
+        """
+        Utility method for reading file. Returns array with all lines. \n
+        string fileName \n
+        string filePath
+        """
+
+        dirPath = os.path.join(sys.path[0], filePath)
+        path = os.path.join(dirPath, fileName) + ".txt"
+        result = []
+
+        try:
+            with open(path, "r") as file:
+                for line in file:
+                    result.append(line)
+
+            file.close()
+
+            return result
+        except Exception as e:
+            print("\nwriteFile error: ")
+            print(e)
+            return result
 
     def testGetFullFilePathDirectory():
         """
@@ -496,11 +564,168 @@ class Tests:
             return 0
 
         return 1
+    
+    def testEditTaskNoFile():
+        """
+        Test editTask() with no file. This should return false.
+        """
         
-    # no file
-    # non existent action argument
-    # bad file name
-    # normal file tick
+        taskNumber = [0]
+        fileName = ""
+        filePath = "."
+        actionName = "delete"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumber, fileName, filePath, actionName, permissions)
+
+        if(not editRes):
+            return 0
+
+        return 1
+    
+    def testEditTaskNoAction():
+        """
+        Test editTask() with no action. This should return false and not alter the contents of the file.
+        """ 
+
+        task = "Run testEditTaskNoAction"
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        taskNumber = [0]
+        actionName = ""
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumber, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == task):
+            return 0
+
+        return 1
+    
+    def testEditTaskNoTaskNumber():
+        """
+        Test editTask() with no number refrence to task. This should return false and not alter the contents of the file.
+        """ 
+
+        task = "Run testEditTaskNoTaskNumber"
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        taskNumber = None
+        actionName = "delete"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumber, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == task):
+            return 0
+
+        return 1
+    
+    def testEditTaskIllegalNumber():
+        """
+        Test editTask() with no action. This should return false and not alter the contents of the file.
+        """ 
+
+        task = "Run testEditTaskIllegalNumber"
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        # Too high
+        taskNumberHigh = [9999]
+        actionName = "delete"
+        permissions = "w"
+        editHighRes = todo.Main.editTask(taskNumberHigh, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(editHighRes):
+            return 1
+
+        fileHighRes = Tests.readFile(testTaskList, testDirectoryName)
+        
+        # Too low
+        taskNumberLow = [-42]
+        editLowRes = todo.Main.editTask(taskNumberLow, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(editLowRes):
+            return 1
+
+        fileLowRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileHighRes) == 1 and fileHighRes[0] == task and len(fileLowRes) == 1 and fileLowRes[0] == task):
+            return 0
+
+        return 1
+    
+    def testEditTaskCheckMarkMalformedTask():
+        """
+        Test editTask() with a normal file and number, however the line is missing a leading 0/1, making the operation impossible. Should return false and not alter the line.
+        """ 
+
+        # Note: no 0 or 1 in beginning of line
+        task = "Run testEditTaskCheckMarkMalformedTask"
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        taskNumber = [0]
+        actionName = "check"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumber, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == task):
+            return 0
+
+        return 1
+
+    def testEditTaskCheckMarkTask():
+        """
+        Test editTask() with a normal file, number, and line. Should return true and only change the 0 to a 1.
+        """ 
+        taskStatus = "0"
+        task = "Run testEditTaskCheckMarkTask"
+        taskLine = taskStatus + " " + task
+        filePath = Tests.writeFile(taskLine, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        taskNumber = [0]
+        actionName = "check"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumber, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(not editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0][1:] == " " + task and fileRes[0][0] == "1"):
+            return 0
+
+        return 1
+
+    # illegal permission 
+
     # normal file delete
     # normal file switch
     # faulty task index (switch number)

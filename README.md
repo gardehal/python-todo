@@ -24,3 +24,9 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 - editfile tests
 - print tasklists (file names, not content)
 - print list tests?
+
+- when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed
+- delete all
+- delete listed
+- uncheck all
+- insert option in editFile

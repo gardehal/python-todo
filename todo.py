@@ -4,10 +4,11 @@ import os
 
 import tests
 
-listArgs = ["-list", "-ls"]
+listTaskArgs = ["-tasks", "-t"]
+listListsArgs = ["-lists", "-l"]
 addArgs = ["-add", "-a"]
 deleteArgs = ["-delete", "-d"]
-checkArgs = ["-check", "-c", "-x", "-tick", "-t"]
+checkArgs = ["-check", "-c", "-x"]
 switchArgs = ["-switch", "-s"]
 setListArgs = ["-setlist", "-sl"]
 helpArgs = ["-help", "-h"]
@@ -32,7 +33,7 @@ class Main:
             arg = sys.argv[argIndex].lower()
 
             # List curret todo list ()
-            if(arg in listArgs):
+            if(arg in listTaskArgs):
                 Main.printList(taskList, taskListPath)
                 argIndex += 1
                 continue
@@ -81,13 +82,13 @@ class Main:
             # Toggle check/tick off a task (mark as done)
             elif(arg in checkArgs):
                 if(argC - argIndex < 2):
-                    print("Too few arguments to tick task, need at least 1: tasknumber (int)")
+                    print("Too few arguments to check task, need at least 1: tasknumber (int)")
                     quit()
                 
                 taskNumber = int(sys.argv[argIndex + 1]) - 1
 
-                tickRes = Main.editTask([taskNumber], taskList, taskListPath, "tick", "w")
-                print(("Successfully" if tickRes else "Failed to") + " tick task.")
+                checkRes = Main.editTask([taskNumber], taskList, taskListPath, "check", "w")
+                print(("Successfully" if checkRes else "Failed to") + " check task.")
 
                 argIndex += 2
                 continue
@@ -258,6 +259,7 @@ class Main:
         """
 
         fullPath = Main.getFullFilePath(taskListPath, taskList)
+
         fileArray = []
         # Read
         try:
@@ -275,15 +277,20 @@ class Main:
             print("The task list " + taskList + " is empty.")
             quit()
 
-            
-        taskNumber = int(taskRefrence[0])
+        try:
+            taskNumber = int(taskRefrence[0])
+        except Exception as e:
+            print("\neditTask readFile error:")
+            print(e)
+            return False
+
 
         if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
             print("Invalid task number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
             return False
 
         # Edit array
-        if(action == "tick"):
+        if(action == "check"):
             fileArray[taskNumber] = ("1" if fileArray[taskNumber][0] == "0" else "0") + fileArray[taskNumber][1:]
 
         elif(action == "delete"):
@@ -294,17 +301,23 @@ class Main:
                 fileArray[len(fileArray) - 1] = fileArray[len(fileArray) - 1].rstrip()
 
         elif(action == "switch"):
-            switchNumber = int(taskRefrence[1])
-            if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
-                print("Invalid switch number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
+            try:
+                switchNumber = int(taskRefrence[1])
+                if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
+                    print("Invalid switch number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
+                    return False
+                    
+                tmp = fileArray[taskNumber]
+                fileArray[taskNumber] = fileArray[switchNumber]
+                fileArray[switchNumber] = tmp
+
+            except Exception as e:
+                print("\neditTask readFile error:")
+                print(e)
                 return False
-
-            tmp = fileArray[taskNumber]
-            fileArray[taskNumber] = fileArray[switchNumber]
-            fileArray[switchNumber] = tmp
-
+            
         else:
-            print("Action not recognized, must be \"tick\", \"delete\"")
+            print("Action not recognized, must be \"check\", \"delete\", \"switch\"")
             return False
 
         # Write back to array
@@ -394,10 +407,10 @@ class Main:
 
             index += 1
 
-    # listArgs = ["-list", "-ls"]
-    # addArgs = ["-add", "-a"]
+    # listTaskArgs = ["-tasks", "-t"]
+    # listListsArgs = ["-lists", "-l"]
     # deleteArgs = ["-delete", "-d"]
-    # checkArgs = ["-check", "-c", "-x", "-tick", "-t"]
+    # checkArgs = ["-check", "-c", "-x"]
     # switchArgs = ["-switch", "-s"]
     # setListArgs = ["-setList", "-sl"]
     # helpArgs = ["-help", "-h"]
@@ -416,7 +429,7 @@ class Main:
         print("\te.g.: $ python todo.py -add \"This is a sentence.\"")
         print("\n")
 
-        print(str(listArgs) + ": prints an indexed list of tasks in the current task list.")
+        print(str(listTaskArgs) + ": prints an indexed list of tasks in the current task list.")
         print(str(addArgs) + " + string + ?taskList: adds the following string to the current task list.")
         print(str(deleteArgs) + " + number + ?taskList: deletes the corresponding task in the current task list.")
         print(str(checkArgs) + " + number: toggle the completetion of the corresponding task in the current task list.")
