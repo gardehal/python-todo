@@ -291,7 +291,10 @@ class Main:
 
         # Edit array
         if(action == "check"):
-            fileArray[taskNumber] = ("1" if fileArray[taskNumber][0] == "0" else "0") + fileArray[taskNumber][1:]
+            if(fileArray[taskNumber][0] == "0" or fileArray[taskNumber][0] == "1"):
+                fileArray[taskNumber] = ("1" if fileArray[taskNumber][0] == "0" else "0") + fileArray[taskNumber][1:]
+            else:
+                return False
 
         elif(action == "delete"):
             fileArray.pop(taskNumber)

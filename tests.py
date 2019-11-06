@@ -6,7 +6,7 @@ import todo
 
 testDirectoryName = "test-tasks"
 testTaskList = "tests"
-testAllTaskListsDirectoryName = "."
+testAllTaskListsDirectoryName = ""
 testAllTaskListsFileName = "test-all-task-lists"
     
 class Tests:
@@ -254,23 +254,10 @@ class Tests:
         """
 
         currentTaskList = "testGetCurrentTaskListFileExists current tasklist"
-        taskList = "testGetCurrentTaskListFileExists tasklist"
+        taskList = "\ntestGetCurrentTaskListFileExists tasklist"
 
-        filePath = os.path.join(sys.path[0], testAllTaskListsFileName) + ".txt"
-        if(os.path.isfile(filePath)):
-            return 1
-        
-        # Make the file
-        try:
-            with open(filePath, "a") as file:
-                file.write(currentTaskList) 
-                file.write("\n" + taskList) 
-
-            file.close()
-        except Exception as e:
-            print("\ntestAddTaskEmptyList error: ")
-            print(e)
-            return 1
+        filePath1 = Tests.writeFile(currentTaskList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
+        filePath2 = Tests.writeFile(taskList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
 
         currentTaskListRes = todo.Main.getCurrentTaskList(testAllTaskListsFileName, testAllTaskListsDirectoryName)
 
@@ -286,40 +273,13 @@ class Tests:
 
         emptyLine = ""
         task = "Run testAddTaskEmptyList"
-        dirPath = os.path.join(sys.path[0], testDirectoryName)
-        path = os.path.join(dirPath, testTaskList) + ".txt"
-        
-        if(not os.path.exists(dirPath)):
-            os.mkdir(dirPath)
-        else:
-            return 1
-
-        try:
-            with open(path, "a") as file:
-                file.write(emptyLine) 
-
-            file.close()
-        except Exception as e:
-            # print("\ntestAddTaskEmptyList error: ")
-            # print(e)
-            return 1
+        filePath = Tests.writeFile(emptyLine, testTaskList, testDirectoryName)
 
         taskRes = todo.Main.addTask(task, testTaskList, testDirectoryName)
-        
-        # Check if the line was added in the file
-        testTaskArray = []
-        try:
-            with open(path, "r") as file:
-                for line in file:
-                    testTaskArray.append(line)
+            
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
 
-            file.close() 
-        except Exception as e:
-            # print("\ntestAddTaskEmptyList error: ")
-            # print(e)
-            return 1
-
-        fileCheck = len(testTaskArray) == 1 and testTaskArray[0] == "0 " + task
+        fileCheck = len(fileRes) == 1 and fileRes[0] == "0 " + task
 
         if(taskRes and fileCheck):
             return 0
@@ -360,18 +320,9 @@ class Tests:
         testFilePath = os.path.join(testDirPath, testTaskList + ".txt")
         isTestFilePath = os.path.isfile(testFilePath)
 
-        # Check if the line was added in the file
-        testTaskArray = []
-        try:
-            with open(testFilePath, "r") as file:
-                for line in file:
-                    testTaskArray.append(line)
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
 
-            file.close() 
-        except FileNotFoundError:
-            return 1
-
-        fileCheck = len(testTaskArray) == 1 and testTaskArray[0] == "0 " + task
+        fileCheck = len(fileRes) == 1 and fileRes[0] == "0 " + task
 
         if(isTestDirPath and isTestFilePath and fileCheck):
             return 0
@@ -391,23 +342,11 @@ class Tests:
 
         if(not task1Res or not task2Res):
             return 1
-            
-        testDirPath = os.path.join(sys.path[0], testDirectoryName)
-        testFilePath = os.path.join(testDirPath, testTaskList + ".txt")
+        
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
 
-        # Check if the line was added in the file
-        testTaskArray = []
-        try:
-            with open(testFilePath, "r") as file:
-                for line in file:
-                    testTaskArray.append(line)
-
-            file.close() 
-        except FileNotFoundError:
-            return 1
-
-        task1Check = len(testTaskArray) == 2 and testTaskArray[0] == "0 " + task1 + "\n"
-        task2Check = len(testTaskArray) == 2 and testTaskArray[1] == "0 " + task2
+        task1Check = len(fileRes) == 2 and fileRes[0] == "0 " + task1 + "\n"
+        task2Check = len(fileRes) == 2 and fileRes[1] == "0 " + task2
 
         if(task1Check and task2Check):
             return 0
@@ -431,24 +370,11 @@ class Tests:
         Test loadFile() with a empty list. It should return an empty array.
         """
 
-        dirPath = os.path.join(sys.path[0], testDirectoryName)
-        path = os.path.join(dirPath, testTaskList) + ".txt"
         task = ""
         
-        if(not os.path.exists(dirPath)):
-            os.mkdir(dirPath)
-        else:
-            return 1
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
 
-        try:
-            with open(path, "a") as file:
-                file.write(task) 
-                uselessVar = True
-
-            file.close()
-        except Exception as e:
-            # print("\ntestloadFileEmptyList error: ")
-            # print(e)
+        if(filePath == None):
             return 1
 
         fileRes = todo.Main.loadFile(testTaskList, testDirectoryName)
@@ -464,22 +390,9 @@ class Tests:
         """
 
         task = "Run testloadFileOneTask"
-        dirPath = os.path.join(sys.path[0], testDirectoryName)
-        path = os.path.join(dirPath, testTaskList) + ".txt"
-        
-        if(not os.path.exists(dirPath)):
-            os.mkdir(dirPath)
-        else:
-            return 1
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
 
-        try:
-            with open(path, "a") as file:
-                file.write(task) 
-
-            file.close()
-        except Exception as e:
-            # print("\ntestloadFileOneTask error: ")
-            # print(e)
+        if(filePath == None):
             return 1
 
         fileRes = todo.Main.loadFile(testTaskList, testDirectoryName)
@@ -502,17 +415,7 @@ class Tests:
 
         setRes = todo.Main.setList(newList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
 
-        fileRes = []
-        try:
-            with open(filePath, "r") as file:
-                for line in file:
-                    fileRes.append(line)
-
-            file.close()
-        except Exception as e:
-            print("\nsetListNoFile error: ")
-            print(e)
-            return 1
+        fileRes = Tests.readFile(testAllTaskListsFileName, testAllTaskListsDirectoryName)
 
         fileCheck = len(fileRes) == 1 and fileRes[0] == newList
 
@@ -528,35 +431,15 @@ class Tests:
 
         oldList = "some other list"
         newList = "setListToSameList list"
-
-        filePath = os.path.join(sys.path[0], testAllTaskListsFileName) + ".txt"
         
-        try:
-            with open(filePath, "a") as file:
-                file.write(oldList)
+        filePath = Tests.writeFile(oldList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
 
-            file.close()
-        except Exception as e:
-            print("\nsetListNoFile error: ")
-            print(e)
-            return 1
-
-        if(not os.path.isfile(filePath)):
+        if(filePath == None):
             return 1
 
         setRes = todo.Main.setList(newList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
 
-        fileRes = []
-        try:
-            with open(filePath, "r") as file:
-                for line in file:
-                    fileRes.append(line)
-
-            file.close()
-        except Exception as e:
-            print("\nsetListNoFile error: ")
-            print(e)
-            return 1
+        fileRes = Tests.readFile(testAllTaskListsFileName, testAllTaskListsDirectoryName)
 
         fileCheck = len(fileRes) == 1 and fileRes[0] == newList
 
