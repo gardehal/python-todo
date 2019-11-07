@@ -59,19 +59,31 @@ class Tests:
         Tests.after(useBeforeAfter)
         testEditTaskIllegalNumberRes = Tests.testEditTaskIllegalNumber()
         Tests.after(useBeforeAfter)
+        testEditTaskIllegalPermissionRes = Tests.testEditTaskIllegalPermission()
+        Tests.after(useBeforeAfter)
         testEditTaskCheckMarkMalformedTaskRes = Tests.testEditTaskCheckMarkMalformedTask()
         Tests.after(useBeforeAfter)
         testEditTaskCheckMarkTaskRes = Tests.testEditTaskCheckMarkTask()
         Tests.after(useBeforeAfter)
+        testEditTaskDeleteTaskRes = Tests.testEditTaskDeleteTask()
+        Tests.after(useBeforeAfter)
+        testEditTaskSwitchTasksRes = Tests.testEditTaskSwitchTasks()
+        Tests.after(useBeforeAfter)
+        testEditTaskIllegalTaskNumberRes = Tests.testEditTaskIllegalTaskNumber()
+        Tests.after(useBeforeAfter)
+        testEditTaskNoSwitchNumberRes = Tests.testEditTaskNoSwitchNumber()
+        Tests.after(useBeforeAfter)
+        
         
         getFullFilePathRes = testGetFullFilePathDirectoryRes + testGetFullFilePathDirectoryAndFileRes
         getCurrentTaskListRes = testGetCurrentTaskListNoFileRes + testGetCurrentTaskListFileExistsRes
         addTaskRes = testAddTaskEmptyListRes + testAddTaskFaultyFileRes + testAddTaskNoFileRes + testAddTaskNewTaskSameTaskListRes 
         loadFileRes = testloadFileNoListRes + testloadFileEmptyListRes + testloadFileOneTaskRes
         setListRes = testSetListNoFileRes + testSetListToSameListRes
-        editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskCheckMarkMalformedTaskRes
-        editFileRes2 = testEditTaskCheckMarkTaskRes
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2
+        editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskIllegalPermissionRes
+        editFileRes2 = testEditTaskCheckMarkMalformedTaskRes + testEditTaskCheckMarkTaskRes + testEditTaskDeleteTaskRes + testEditTaskSwitchTasksRes
+        editFileRes3 = testEditTaskIllegalTaskNumberRes + testEditTaskNoSwitchNumberRes
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -96,8 +108,13 @@ class Tests:
         Tests.printTestResult(testEditTaskNoActionRes, "testEditTaskNoAction")
         Tests.printTestResult(testEditTaskNoTaskNumberRes, "testEditTaskNoTaskNumber")
         Tests.printTestResult(testEditTaskIllegalNumberRes, "testEditTaskIllegalNumber")
+        Tests.printTestResult(testEditTaskIllegalPermissionRes, "testEditTaskIllegalPermission")
         Tests.printTestResult(testEditTaskCheckMarkMalformedTaskRes, "testEditTaskCheckMarkMalformedTask")
         Tests.printTestResult(testEditTaskCheckMarkTaskRes, "testEditTaskCheckMarkTask")
+        Tests.printTestResult(testEditTaskDeleteTaskRes, "testEditTaskDeleteTask")
+        Tests.printTestResult(testEditTaskSwitchTasksRes, "testEditTaskSwitchTasks")
+        Tests.printTestResult(testEditTaskIllegalTaskNumberRes, "testEditTaskIllegalTaskNumber")
+        Tests.printTestResult(testEditTaskNoSwitchNumberRes, "testEditTaskNoSwitchNumber")
 
         print("\n" + ("All tests passed." if finalRes == 0 else (str(finalRes) + " test(s) failed.")))
         if(useBeforeAfter == 0):
@@ -519,7 +536,7 @@ class Tests:
     
     def testEditTaskIllegalNumber():
         """
-        Test editTask() with no action. This should return false and not alter the contents of the file.
+        Test editTask() with too high and too low task numbers. This should return false and not alter the contents of the file.
         """ 
 
         task = "Run testEditTaskIllegalNumber"
@@ -549,6 +566,32 @@ class Tests:
         fileLowRes = Tests.readFile(testTaskList, testDirectoryName)
 
         if(len(fileHighRes) == 1 and fileHighRes[0] == task and len(fileLowRes) == 1 and fileLowRes[0] == task):
+            return 0
+
+        return 1
+
+    def testEditTaskIllegalPermission():
+        """
+        Test editTask() with illegal permission. This should return false and not alter the contents of the file.
+        """ 
+
+        task = "Run testEditTaskIllegalPermission"
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        taskNumber = [0]
+        actionName = "delete"
+        permissions = "some nonexistent permission"
+        editRes = todo.Main.editTask(taskNumber, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == task):
             return 0
 
         return 1
@@ -584,6 +627,7 @@ class Tests:
         """
         Test editTask() with a normal file, number, and line. Should return true and only change the 0 to a 1.
         """ 
+
         taskStatus = "0"
         task = "Run testEditTaskCheckMarkTask"
         taskLine = taskStatus + " " + task
@@ -607,14 +651,123 @@ class Tests:
 
         return 1
 
-    # illegal permission 
+    def testEditTaskDeleteTask():
+        """
+        Test editTask() with a normal file, number, and line. Should return true and remove the line taskNumber, but not delete the file.
+        """ 
+        
+        task = "Run testEditTaskDeleteTask"
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
 
-    # normal file delete
-    # normal file switch
-    # faulty task index (switch number)
-    # faulty task index (task number)
-    def testEditTask():
+        if(filePath == None):
+            return 1
+
+        taskNumber = [0]
+        actionName = "delete"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumber, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(not editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 0 and os.path.isfile(filePath)):
+            return 0
+
+        return 1
+
+    def testEditTaskSwitchTasks():
         """
+        Test editTask() with a normal file, numbers, and line. Should return true and switch the lines.
+        """ 
+        
+        firstTask = "Run testEditTaskSwitchTasks first\n"
+        secondTask = "Run testEditTaskSwitchTasks again"
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None):
+            return 1
+            
+        firstFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(firstFileRes) != 2 or firstFileRes[0] != firstTask or firstFileRes[1] != secondTask):
+            return 1
+
+        taskNumbers = [0, 1]
+        actionName = "switch"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumbers, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(not editRes):
+            return 1
+
+        secondFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # Note: The newline has been moved from the end of the first task to the end of the second task
+        if(len(secondFileRes) == 2 and secondFileRes[0] == (secondTask + "\n") and secondFileRes[1] == firstTask.rstrip()):
+            return 0
+
+        return 1
+        
+    def testEditTaskIllegalTaskNumber():
         """
+        Test editTask() with a normal file, but the number is not an array. Should return false and not alter the file.
+        """ 
+        
+        task = "Run testEditTaskIllegalTaskNumber"
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        illegalTaskNumber = 0
+        actionName = "delete"
+        permissions = "w"
+        editRes = todo.Main.editTask(illegalTaskNumber, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == task):
+            return 0
+
+        return 1
+        
+    def testEditTaskNoSwitchNumber():
+        """
+        Test editTask() with a normal file, tasknumber, but the second number is not in the array. Should return false and not alter the file.
+        """ 
+        
+        firstTask = "Run testEditTaskNoSwitchNumber first\n"
+        secondTask = "Run testEditTaskNoSwitchNumber again"
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None):
+            return 1
+            
+        firstFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(firstFileRes) != 2 or firstFileRes[0] != firstTask or firstFileRes[1] != secondTask):
+            return 1
+
+        taskNumbers = [0]
+        actionName = "switch"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumbers, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(editRes):
+            return 1
+
+        secondFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(firstFileRes) == 2 and firstFileRes[0] == firstTask and firstFileRes[1] == secondTask):
+            return 0
 
         return 1

@@ -310,8 +310,8 @@ class Main:
                     print("Invalid switch number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
                     return False
                     
-                tmp = fileArray[taskNumber]
-                fileArray[taskNumber] = fileArray[switchNumber]
+                tmp = fileArray[taskNumber].rstrip()
+                fileArray[taskNumber] = fileArray[switchNumber].rstrip() + "\n"
                 fileArray[switchNumber] = tmp
 
             except Exception as e:

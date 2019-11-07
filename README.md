@@ -21,7 +21,6 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 - check spelling
 - help print + help in readme.md
 - groom/trigger reset functions
-- editfile tests
 - print tasklists (file names, not content)
 - print list tests?
 
