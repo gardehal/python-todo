@@ -37,7 +37,9 @@ class Tests:
         Tests.after(useBeforeAfter)
         testAddTaskFaultyFileRes = Tests.testAddTaskFaultyFile()
         Tests.after(useBeforeAfter)
-        testAddTaskNoFileRes = Tests.testAddTaskNoFile()
+        testAddTaskNoFileRes = Tests.testAddTaskNoFile() 
+        Tests.after(useBeforeAfter)
+        testAddTaskNoTaskRes = Tests.testAddTaskNoTask() 
         Tests.after(useBeforeAfter)
         testAddTaskNewTaskSameTaskListRes = Tests.testAddTaskNewTaskSameTaskList()
         Tests.after(useBeforeAfter)
@@ -73,17 +75,25 @@ class Tests:
         Tests.after(useBeforeAfter)
         testEditTaskNoSwitchNumberRes = Tests.testEditTaskNoSwitchNumber()
         Tests.after(useBeforeAfter)
-        
+        testFormatPrintListNoFileRes = Tests.testFormatPrintListNoFile()
+        Tests.after(useBeforeAfter)
+        testFormatPrintListEmptyFileRes = Tests.testFormatPrintListEmptyFile()
+        Tests.after(useBeforeAfter)
+        testFormatPrintListMalformedZeroOneRes = Tests.testFormatPrintListMalformedZeroOne()
+        Tests.after(useBeforeAfter)
+        testFormatPrintListMalformedTaskTextRes = Tests.testFormatPrintListMalformedTaskText()
+        Tests.after(useBeforeAfter)
         
         getFullFilePathRes = testGetFullFilePathDirectoryRes + testGetFullFilePathDirectoryAndFileRes
         getCurrentTaskListRes = testGetCurrentTaskListNoFileRes + testGetCurrentTaskListFileExistsRes
-        addTaskRes = testAddTaskEmptyListRes + testAddTaskFaultyFileRes + testAddTaskNoFileRes + testAddTaskNewTaskSameTaskListRes 
+        addTaskRes = testAddTaskEmptyListRes + testAddTaskFaultyFileRes + testAddTaskNoFileRes + testAddTaskNoTaskRes + testAddTaskNewTaskSameTaskListRes 
         loadFileRes = testloadFileNoListRes + testloadFileEmptyListRes + testloadFileOneTaskRes
         setListRes = testSetListNoFileRes + testSetListToSameListRes
         editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskIllegalPermissionRes
         editFileRes2 = testEditTaskCheckMarkMalformedTaskRes + testEditTaskCheckMarkTaskRes + testEditTaskDeleteTaskRes + testEditTaskSwitchTasksRes
         editFileRes3 = testEditTaskIllegalTaskNumberRes + testEditTaskNoSwitchNumberRes
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3
+        formatPrintListRes = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedTaskTextRes
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + formatPrintListRes
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -98,6 +108,7 @@ class Tests:
         Tests.printTestResult(testAddTaskEmptyListRes, "testAddTaskEmptyList")
         Tests.printTestResult(testAddTaskFaultyFileRes, "testAddTaskFaultyFile")
         Tests.printTestResult(testAddTaskNoFileRes, "testAddTaskNoFile")
+        Tests.printTestResult(testAddTaskNoTaskRes, "testAddTaskNoTask")
         Tests.printTestResult(testAddTaskNewTaskSameTaskListRes, "testAddTaskNewTaskSameTaskList")
         Tests.printTestResult(testloadFileNoListRes, "testloadFileNoList")
         Tests.printTestResult(testloadFileEmptyListRes, "testloadFileEmptyList")
@@ -115,6 +126,10 @@ class Tests:
         Tests.printTestResult(testEditTaskSwitchTasksRes, "testEditTaskSwitchTasks")
         Tests.printTestResult(testEditTaskIllegalTaskNumberRes, "testEditTaskIllegalTaskNumber")
         Tests.printTestResult(testEditTaskNoSwitchNumberRes, "testEditTaskNoSwitchNumber")
+        Tests.printTestResult(testFormatPrintListNoFileRes, "testFormatPrintListNoFile")
+        Tests.printTestResult(testFormatPrintListEmptyFileRes, "testFormatPrintListEmptyFile")
+        Tests.printTestResult(testFormatPrintListMalformedZeroOneRes, "testFormatPrintListMalformedZeroOne")
+        Tests.printTestResult(testFormatPrintListMalformedTaskTextRes, "testFormatPrintListMalformedTaskText")
 
         print("\n" + ("All tests passed." if finalRes == 0 else (str(finalRes) + " test(s) failed.")))
         if(useBeforeAfter == 0):
@@ -342,6 +357,25 @@ class Tests:
         fileCheck = len(fileRes) == 1 and fileRes[0] == "0 " + task
 
         if(isTestDirPath and isTestFilePath and fileCheck):
+            return 0
+        
+        return 1
+        
+    def testAddTaskNoTask():
+        """
+        Test addTask() with an empty task string. Should return false and no create a file or task.
+        """
+
+        task = ""
+        taskRes = todo.Main.addTask(task, testTaskList, testDirectoryName)
+
+        testDirPath = os.path.join(sys.path[0], testDirectoryName)
+        isTestDirPath = os.path.isdir(testDirPath)
+
+        testFilePath = os.path.join(testDirPath, testTaskList + ".txt")
+        isTestFilePath = os.path.isfile(testFilePath)
+
+        if(not taskRes and not isTestDirPath and not isTestFilePath):
             return 0
         
         return 1
@@ -770,4 +804,64 @@ class Tests:
         if(len(firstFileRes) == 2 and firstFileRes[0] == firstTask and firstFileRes[1] == secondTask):
             return 0
 
+        return 1
+    
+    def testFormatPrintListNoFile():
+        """
+        Test formatPrintList() with a no previous file exisiting. Should return a empty array.
+        """ 
+
+
+        testDirPath = os.path.join(sys.path[0], testDirectoryName)
+        testFilePath = os.path.join(testDirPath, testTaskList + ".txt")
+        isTestFilePath = os.path.isfile(testFilePath)
+
+        if(isTestFilePath):
+            return 1
+
+        printRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+        if(type(printRes) == list and len(printRes) == 0):
+            return 0
+
+        return 1
+    
+    def testFormatPrintListEmptyFile():
+        """
+        Test formatPrintList() with a an empty file. Should return an empty array.
+        """ 
+
+        task = ""
+
+        filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
+
+        if(not filePath):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(type(fileRes) != list or len(fileRes) != 0):
+            return 1
+
+        printRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+        if(type(printRes) == list and len(printRes) == 0):
+            return 0
+
+        return 1
+        
+    def testFormatPrintListMalformedZeroOne():
+        """
+        Test formatPrintList() with a file which has a malformed task line (no 0/1).
+        """ 
+
+        print("testFormatPrintListMalformedZeroOne not written")
+        return 1
+
+    def testFormatPrintListMalformedTaskText():
+        """
+        Test formatPrintList() with a file which has a malformed task line (no task text).
+        """ 
+
+        print("testFormatPrintListMalformedTaskText not written")
         return 1

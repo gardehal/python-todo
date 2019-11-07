@@ -34,7 +34,10 @@ class Main:
 
             # List curret todo list ()
             if(arg in listTaskArgs):
-                Main.printList(taskList, taskListPath)
+                formatRes = Main.formatPrintList(taskList, taskListPath)
+                for line in formatRes:
+                    print(line)
+
                 argIndex += 1
                 continue
 
@@ -143,10 +146,9 @@ class Main:
             argIndex += 1
 
         if(argC < 2):
-            Main.printList(taskList, taskListPath)
-
-        print("\nend")
-
+            formatRes = Main.formatPrintList(taskList, taskListPath)
+            for line in formatRes:
+                print(line)
         
     def getFullFilePath(dirPath, fileName = None):
         """
@@ -201,6 +203,9 @@ class Main:
         string taskList \n
         string taskListPath
         """
+
+        if(task.rstrip() == ""):
+            return False
 
         loadTaskRes = Main.loadFile(taskList, taskListPath)
         fileExists = True if len(loadTaskRes) > 0 else False
@@ -363,7 +368,10 @@ class Main:
 
         return True
 
-    def printList(taskList, taskListPath):
+    def mendTaskList(taskList, taskListPath):
+        print("WIP")
+
+    def formatPrintList(taskList, taskListPath):
         """
         A method for formatting the task in a task list in a legible manner. \n
         string taskList \n
@@ -373,11 +381,13 @@ class Main:
         tasks = Main.loadFile(taskList, taskListPath)
         if(len(tasks) == 0):
             print("The task list " + taskList + " is empty.")
-            quit()
+            return []
         
         # Legend for task list
         print("From task list: " + taskList)
         print("#" + "\t" + "Completed?" + "\t" + "Task name" + "\t" + "Next reset")
+
+        printArray = []
 
         nTasks = len(tasks)
         index = 0
@@ -393,22 +403,28 @@ class Main:
                 taskCompleted = "Yes" if task[0] == "1" else "No"
                 taskText = task[1:]
                 
-                print(str(index + 1) + "\t" + str(taskCompleted) + "\t\t" + str(taskText) + "\t" + str(taskReset))
+                printArray.append(str(index + 1) + "\t" + str(taskCompleted) + "\t\t" + str(taskText) + "\t" + str(taskReset))
             except:
+                # TODO extract to method
+                # mendRes = Main.mendTaskList(taskList, taskListPath)
+
                 # Malformed line, attempt to fix it, if it's empty, remove it.
                 # if(len(task) > 0):
-                #     tasks[index] = ((task[0] + " " + task[1:]) if type(task[0]) == int else ("0 " + task[1:]))
-
-                # Understand the problem with the line
-                # Try to repair the line
-                # Save the line (addTask)
-                # Put the task in the right place (switch? or insert with custom code)
+                #     Main.editTask([index], taskList, taskListPath, "delete")
+                # if(task[0] != "0" or task[0] != "1"):
+                #     Main.editTask([index], taskList, taskListPath, "delete")
+                #     Main.addTask(task, taskList, taskListPath)
+                    # TODO insert new task line to index and rerun print
+                    # Main.editTask([len(tasks), index], taskList, taskListPath, "insert")
+                    # 
 
                 print("This task, number " + str(index + 1) + " was malformed. Consider delete and add it again, the text is: \"" + task + "\"")
-                index +=1
+                index += 1
                 continue
 
             index += 1
+
+        return printArray
 
     # listTaskArgs = ["-tasks", "-t"]
     # listListsArgs = ["-lists", "-l"]
@@ -433,6 +449,7 @@ class Main:
         print("\n")
 
         print(str(listTaskArgs) + ": prints an indexed list of tasks in the current task list.")
+        # print(str(listListsArgs) + ": prints a list of all task lists.")
         print(str(addArgs) + " + string + ?taskList: adds the following string to the current task list.")
         print(str(deleteArgs) + " + number + ?taskList: deletes the corresponding task in the current task list.")
         print(str(checkArgs) + " + number: toggle the completetion of the corresponding task in the current task list.")

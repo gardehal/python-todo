@@ -9,7 +9,22 @@ Python console program for managing TODO-tasks.
 4. $ python todo.py [arguments...]
 
 ## Help
+- Arguments marked with ? are optional.
+- All arguments that triggers a function start with dash(-).
+- All arguments must be separated by space only.
+- To submit sentences with spaces beween words, use quotation marks (", '), othwerwise they will be counted as separate arguments.
+    - e.g.: $ python todo.py -add "This is a sentence."
 
+---
+
+- ['-tasks', '-t']: prints an indexed list of tasks in the current task list.
+- ['-add', '-a'] + string + ?taskList: adds the following string to the current task list.
+- ['-delete', '-d'] + number + ?taskList: deletes the corresponding task in the current task list.
+- ['-check', '-c', '-x'] + number: toggle the completetion of the corresponding task in the current task list.
+- ['-switch', '-s']+ number + number: switches the position of the two corresponding tasks in the current task list.
+- ['-setlist', '-sl']: string: sets the current task list to the string given.
+- ['-help', '-h']: prints this information about input arguments.
+- ['-test']: runs unit tests and prints the result.
 
 ## My Thoughts
 
@@ -26,6 +41,6 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed
 - delete all
-- delete listed
+- delete all checked tasks
 - uncheck all
 - insert option in editFile
