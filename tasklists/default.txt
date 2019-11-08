@@ -1,9 +1,3 @@
-1 one
-0 two
-0 three
-0 two
-0 three
-0 two
-0 three
-0 four
-0 
+0 next is blank
+0 next is no task
+0 no completed number

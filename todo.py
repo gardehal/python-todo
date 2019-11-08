@@ -253,7 +253,7 @@ class Main:
 
         return res
 
-    def editTask(taskRefrence, taskList, taskListPath, action, filePermissions = "rw+"):
+    def editTask(taskRefrence, taskList, taskListPath, action, filePermissions = "w"):
         """
         A method editing a tasklist. \n
         int array taskRefrence \n
@@ -371,21 +371,24 @@ class Main:
     def mendTaskList(taskList, taskListPath):
         print("WIP")
 
-    def formatPrintList(taskList, taskListPath):
+    def formatPrintList(taskList, taskListPath, retry = False):
         """
         A method for formatting the task in a task list in a legible manner. \n
         string taskList \n
         string taskListPath
         """
 
+        if(not retry):
+            # Prints should be added to return array at the end of method, or sent separatly, though other array (array of metadata array and content array, aka wrap) or on separate method
+            # Legend for task list
+            print("From task list: " + taskList)
+            print("#" + "\t" + "Completed?" + "\t" + "Task name" + "\t" + "Next reset")
+
         tasks = Main.loadFile(taskList, taskListPath)
         if(len(tasks) == 0):
             print("The task list " + taskList + " is empty.")
             return []
         
-        # Legend for task list
-        print("From task list: " + taskList)
-        print("#" + "\t" + "Completed?" + "\t" + "Task name" + "\t" + "Next reset")
 
         printArray = []
 
@@ -400,8 +403,11 @@ class Main:
             #     taskReset = task[1]
 
             try:
-                taskCompleted = "Yes" if task[0] == "1" else "No"
-                taskText = task[1:]
+                taskCompleted = "Yes" if int(task[0]) == 1 else "No"
+                taskText = str(task[1:]).rstrip()
+
+                if(len(taskText) < 1):
+                    raise Exception
                 
                 printArray.append(str(index + 1) + "\t" + str(taskCompleted) + "\t\t" + str(taskText) + "\t" + str(taskReset))
             except:
@@ -409,22 +415,38 @@ class Main:
                 # mendRes = Main.mendTaskList(taskList, taskListPath)
 
                 # Malformed line, attempt to fix it, if it's empty, remove it.
-                # if(len(task) > 0):
-                #     Main.editTask([index], taskList, taskListPath, "delete")
-                # if(task[0] != "0" or task[0] != "1"):
-                #     Main.editTask([index], taskList, taskListPath, "delete")
-                #     Main.addTask(task, taskList, taskListPath)
-                    # TODO insert new task line to index and rerun print
-                    # Main.editTask([len(tasks), index], taskList, taskListPath, "insert")
-                    # 
+                taskLine = str(task).rstrip()
+                
+                # taskLine is empty string ("") or only contains a complete number ("0"/"1"), delete line
+                if(len(taskLine) < 1 or len(taskLine[1:]) < 1):
+                    Main.editTask([index], taskList, taskListPath, "delete")
 
-                print("This task, number " + str(index + 1) + " was malformed. Consider delete and add it again, the text is: \"" + task + "\"")
-                index += 1
-                continue
+                # taskLine has no complete number ("0"/"1"), but has a task, add task again
+                elif(taskLine[0] != "0" and taskLine[0] != "1"):
+                    Main.editTask([index], taskList, taskListPath, "delete")
+                    Main.addTask(taskLine, taskList, taskListPath)
+
+                    # TODO insert new task line to index where it was
+                    # Main.editTask([len(tasks), index], taskList, taskListPath, "insert")
+
+                # Unknown error, implore the user fix and quit
+                else:
+                    printArray.append("This task, number " + str(index + 1) + " was malformed. Please delete and add it again before trying agian. The text is: \"" + task + "\"")
+                    quit()
+                    
+                # Though recursion, run method again, this should load the fixed file into memory and recursivly fix the 
+                # file when it finds an error untill all is well or it hits the else part above.
+                return Main.formatPrintList(taskList, taskListPath, True)
 
             index += 1
 
         return printArray
+
+    # no completed number
+    # 0 next is blank
+
+    # 0 next is no task
+    # 0
 
     # listTaskArgs = ["-tasks", "-t"]
     # listListsArgs = ["-lists", "-l"]
