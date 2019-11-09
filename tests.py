@@ -17,6 +17,13 @@ class Tests:
         int useBeforeAfter (optional)
         """
 
+        # For checking individual tests
+        # testFormatPrintListMalformedTaskTextRes = Tests.testFormatPrintListMalformedTaskText()
+        # Tests.after(useBeforeAfter)
+        
+        # Tests.printTestResult(testFormatPrintListMalformedTaskTextRes, "testFormatPrintListMalformedTaskText")
+        # quit()
+
         if(useBeforeAfter == 0):
             print("Not invoking before/after methods in tests.")
         else:
@@ -89,6 +96,8 @@ class Tests:
         Tests.after(useBeforeAfter)
         testFormatPrintListMalformedTaskTextRes = Tests.testFormatPrintListMalformedTaskText()
         Tests.after(useBeforeAfter)
+        testFormatPrintListNormalFormatRes = Tests.testFormatPrintListNormalFormat()
+        Tests.after(useBeforeAfter)
         
         getFullFilePathRes = testGetFullFilePathDirectoryRes + testGetFullFilePathDirectoryAndFileRes
         getCurrentTaskListRes = testGetCurrentTaskListNoFileRes + testGetCurrentTaskListFileExistsRes
@@ -98,8 +107,9 @@ class Tests:
         editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskIllegalPermissionRes
         editFileRes2 = testEditTaskCheckMarkMalformedTaskRes + testEditTaskCheckMarkTaskRes + testEditTaskDeleteTaskRes + testEditTaskSwitchLastTaskRes + testEditTaskSwitchTasksRes
         editFileRes3 = testEditTaskInsertLastTaskRes + testEditTaskInsertTaskRes + testEditTaskIllegalTaskNumberRes + testEditTaskNoActionNumberRes
-        formatPrintListRes = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedTaskTextRes
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + formatPrintListRes
+        formatPrintListRes1 = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedTaskTextRes
+        formatPrintListRes2 = testFormatPrintListNormalFormatRes
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + formatPrintListRes1 + formatPrintListRes2
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -139,6 +149,7 @@ class Tests:
         Tests.printTestResult(testFormatPrintListEmptyFileRes, "testFormatPrintListEmptyFile")
         Tests.printTestResult(testFormatPrintListMalformedZeroOneRes, "testFormatPrintListMalformedZeroOne")
         Tests.printTestResult(testFormatPrintListMalformedTaskTextRes, "testFormatPrintListMalformedTaskText")
+        Tests.printTestResult(testFormatPrintListNormalFormatRes, "testFormatPrintListNormalFormat")
 
         print("\n" + ("All tests passed." if finalRes == 0 else (str(finalRes) + " test(s) failed.")))
         if(useBeforeAfter == 0):
@@ -954,9 +965,9 @@ class Tests:
         if(isTestFilePath):
             return 1
 
-        printRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+        formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
 
-        if(type(printRes) == list and len(printRes) == 0):
+        if(type(formatRes) == list and len(formatRes) == 0):
             return 0
 
         return 1
@@ -970,7 +981,7 @@ class Tests:
 
         filePath = Tests.writeFile(task, testTaskList, testDirectoryName)
 
-        if(not filePath):
+        if(filePath == None):
             return 1
 
         fileRes = Tests.readFile(testTaskList, testDirectoryName)
@@ -978,25 +989,120 @@ class Tests:
         if(type(fileRes) != list or len(fileRes) != 0):
             return 1
 
-        printRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+        formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
 
-        if(type(printRes) == list and len(printRes) == 0):
+        if(type(formatRes) == list and len(formatRes) == 0):
             return 0
 
         return 1
         
     def testFormatPrintListMalformedZeroOne():
         """
-        Test formatPrintList() with a file which has a malformed task line (no 0/1).
+        Test formatPrintList() with a file which has a malformed task line (no 0/1). Should return an array of the lines in a special format.
         """ 
 
-        print("testFormatPrintListMalformedZeroOne not written")
+        firstTask = "0 Run testFormatPrintListMalformedZeroOne normal entree\n"
+        secondTask = "1 Run testFormatPrintListMalformedZeroOne normal entree\n"
+        thirdTask = "Run testFormatPrintListMalformedZeroOne no completed number\n"
+        fourthTask = "-1 Run testFormatPrintListMalformedZeroOne negative completed number"
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+        thirdFilePath = Tests.writeFile(thirdTask, testTaskList, testDirectoryName)
+        fourthFilePath = Tests.writeFile(fourthTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None or thirdFilePath == None or fourthFilePath == None):
+            return 1
+
+        formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+        # Only check on array size, format should be checked in another test
+        if(len(formatRes) != 4):
+            return 1
+        
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # First and second line should be fine
+        normalLineCheck = fileRes[0] == firstTask and fileRes[1] == secondTask
+
+
+        # Thid line is missing a completed number and fourth line has a negative number. 
+        # Both should be rectified in the formating list and returned, as well as saved in the file.
+        thirdLineCheck = fileRes[2] == "0 " + thirdTask
+        fourthLineCheck = fileRes[3] == "0 " + fourthTask # Note that the "-1" is not removed
+
+        if(normalLineCheck and thirdLineCheck and fourthLineCheck):
+            return 0
+
         return 1
 
     def testFormatPrintListMalformedTaskText():
         """
-        Test formatPrintList() with a file which has a malformed task line (no task text).
-        """ 
+        Test formatPrintList() with a file which has a malformed task line (no task text). This should return an array with the malformed lines removed
+        and save the changes to the file.
+        """
 
-        print("testFormatPrintListMalformedTaskText not written")
+        firstTask = "0 Run testFormatPrintListMalformedTaskText next line is empty but has a completed number\n"
+        secondTask = "1\n"
+        thirdTask = "0 Run testFormatPrintListMalformedZeroOne no completed number or task\n"
+        fourthTask = ""
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+        thirdFilePath = Tests.writeFile(thirdTask, testTaskList, testDirectoryName)
+        fourthFilePath = Tests.writeFile(fourthTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None or thirdFilePath == None or fourthFilePath == None):
+            return 1
+
+        formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+        # Only check on array size, format should be checked in another test
+        if(len(formatRes) != 2):
+            return 1
+        
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # First and thid line should be fine, the lines without text should be deleted, so line three is now line two.
+        # Note: The newline on thridTask has been removed.
+        normalLineCheck = fileRes[0] == firstTask and fileRes[1] == thirdTask.rstrip()
+
+        if(normalLineCheck):
+            return 0
+
+        return 1
+        
+    def testFormatPrintListNormalFormat():
+        """
+        Test formatPrintList() with a normal file and content. This should return an array of formatted lines which is easier to read than the file.
+        """
+
+        firstTaskText = "Run testFormatPrintListNormalFormat not completed line"
+        secondTaskText = "Run testFormatPrintListNormalFormat completed line"
+        firstTask = "0 " + firstTaskText + "\n"
+        secondTask = "1 " + secondTaskText
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None):
+            return 1
+
+        formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+        # Format is:
+        # [index] ["Yes"/"No"] [task]
+        firstTaskFormat = "1\tNo\t\t" + firstTaskText + "\t"
+        secondTaskFormat = "2\tYes\t\t" + secondTaskText + "\t"
+
+        formatCheck = len(formatRes) == 2 and formatRes[0] == firstTaskFormat and formatRes[1] == secondTaskFormat
+        
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # Check the file array
+        fileCheck = fileRes[0] == firstTask and fileRes[1] == secondTask
+
+        if(fileCheck and formatCheck):
+            return 0
+
         return 1

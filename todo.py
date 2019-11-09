@@ -435,7 +435,7 @@ class Main:
 
             try:
                 taskCompleted = "Yes" if int(task[0]) == 1 else "No"
-                taskText = str(task[1:]).rstrip()
+                taskText = str(task[2:]).rstrip()
 
                 if(len(taskText) < 1):
                     raise Exception
