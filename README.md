@@ -18,8 +18,8 @@ Python console program for managing TODO-tasks.
 ---
 
 - ['-tasks', '-t']: prints an indexed list of tasks in the current task list.
-- ['-add', '-a'] + string + ?taskList: adds the following string to the current task list.
-- ['-delete', '-d'] + number + ?taskList: deletes the corresponding task in the current task list.
+- ['-add', '-a'] + string: adds the following string to the current task list.
+- ['-delete', '-d'] + number: deletes the corresponding task in the current task list.
 - ['-check', '-c', '-x'] + number: toggle the completetion of the corresponding task in the current task list.
 - ['-switch', '-s']+ number + number: switches the position of the two corresponding tasks in the current task list.
 - ['-setlist', '-sl']: string: sets the current task list to the string given.
@@ -34,13 +34,12 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 
 ### TODO:
 - check spelling
+- finish format tests
+- print tasklists (file names, not content) + tests
 - help print + help in readme.md
 - groom/trigger reset functions
-- print tasklists (file names, not content)
-- print list tests?
 
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed
 - delete all
 - delete all checked tasks
 - uncheck all
-- insert option in editFile

@@ -69,11 +69,17 @@ class Tests:
         Tests.after(useBeforeAfter)
         testEditTaskDeleteTaskRes = Tests.testEditTaskDeleteTask()
         Tests.after(useBeforeAfter)
+        testEditTaskSwitchLastTaskRes = Tests.testEditTaskSwitchLastTask()
+        Tests.after(useBeforeAfter)
         testEditTaskSwitchTasksRes = Tests.testEditTaskSwitchTasks()
+        Tests.after(useBeforeAfter)
+        testEditTaskInsertLastTaskRes = Tests.testEditTaskInsertLastTask()
+        Tests.after(useBeforeAfter)
+        testEditTaskInsertTaskRes = Tests.testEditTaskInsertTask()
         Tests.after(useBeforeAfter)
         testEditTaskIllegalTaskNumberRes = Tests.testEditTaskIllegalTaskNumber()
         Tests.after(useBeforeAfter)
-        testEditTaskNoSwitchNumberRes = Tests.testEditTaskNoSwitchNumber()
+        testEditTaskNoActionNumberRes = Tests.testEditTaskNoActionNumber()
         Tests.after(useBeforeAfter)
         testFormatPrintListNoFileRes = Tests.testFormatPrintListNoFile()
         Tests.after(useBeforeAfter)
@@ -90,8 +96,8 @@ class Tests:
         loadFileRes = testloadFileNoListRes + testloadFileEmptyListRes + testloadFileOneTaskRes
         setListRes = testSetListNoFileRes + testSetListToSameListRes
         editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskIllegalPermissionRes
-        editFileRes2 = testEditTaskCheckMarkMalformedTaskRes + testEditTaskCheckMarkTaskRes + testEditTaskDeleteTaskRes + testEditTaskSwitchTasksRes
-        editFileRes3 = testEditTaskIllegalTaskNumberRes + testEditTaskNoSwitchNumberRes
+        editFileRes2 = testEditTaskCheckMarkMalformedTaskRes + testEditTaskCheckMarkTaskRes + testEditTaskDeleteTaskRes + testEditTaskSwitchLastTaskRes + testEditTaskSwitchTasksRes
+        editFileRes3 = testEditTaskInsertLastTaskRes + testEditTaskInsertTaskRes + testEditTaskIllegalTaskNumberRes + testEditTaskNoActionNumberRes
         formatPrintListRes = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedTaskTextRes
         finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + formatPrintListRes
 
@@ -123,9 +129,12 @@ class Tests:
         Tests.printTestResult(testEditTaskCheckMarkMalformedTaskRes, "testEditTaskCheckMarkMalformedTask")
         Tests.printTestResult(testEditTaskCheckMarkTaskRes, "testEditTaskCheckMarkTask")
         Tests.printTestResult(testEditTaskDeleteTaskRes, "testEditTaskDeleteTask")
+        Tests.printTestResult(testEditTaskSwitchLastTaskRes, "testEditTaskSwitchLastTask")
         Tests.printTestResult(testEditTaskSwitchTasksRes, "testEditTaskSwitchTasks")
+        Tests.printTestResult(testEditTaskInsertLastTaskRes, "testEditTaskInsertLastTask")
+        Tests.printTestResult(testEditTaskInsertTaskRes, "testEditTaskInsertTask")
         Tests.printTestResult(testEditTaskIllegalTaskNumberRes, "testEditTaskIllegalTaskNumber")
-        Tests.printTestResult(testEditTaskNoSwitchNumberRes, "testEditTaskNoSwitchNumber")
+        Tests.printTestResult(testEditTaskNoActionNumberRes, "testEditTaskNoActionNumber")
         Tests.printTestResult(testFormatPrintListNoFileRes, "testFormatPrintListNoFile")
         Tests.printTestResult(testFormatPrintListEmptyFileRes, "testFormatPrintListEmptyFile")
         Tests.printTestResult(testFormatPrintListMalformedZeroOneRes, "testFormatPrintListMalformedZeroOne")
@@ -711,6 +720,50 @@ class Tests:
 
         return 1
 
+    def testEditTaskSwitchLastTask():
+        """
+        Test editTask() with a normal file, numbers, and line, and switching the last task for newline reasons. Should return true and switch the lines.
+        """ 
+        
+        firstTask = "Run testEditTaskSwitchLastTask first\n"
+        secondTask = "Run testEditTaskSwitchLastTask second\n"
+        thirdTask = "Run testEditTaskSwitchLastTask third\n"
+        fourthTask = "Run testEditTaskSwitchLastTask fourth"
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+        thirdFilePath = Tests.writeFile(thirdTask, testTaskList, testDirectoryName)
+        fourthFilePath = Tests.writeFile(fourthTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None or thirdFilePath == None or fourthFilePath == None):
+            return 1
+            
+        firstFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(firstFileRes) != 4 or firstFileRes[0] != firstTask or firstFileRes[1] != secondTask or firstFileRes[2] != thirdTask or firstFileRes[3] != fourthTask):
+            return 1
+
+        taskNumbers = [0, 3]
+        actionName = "switch"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumbers, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(not editRes):
+            return 1
+
+        secondFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # The second(index: 1) and third(index: 2) lines should not be altered
+        untouchedLinesRes = len(secondFileRes) == 4 and secondFileRes[1] == secondTask and secondFileRes[2] == thirdTask
+
+        # Note: The newline has been moved from the end of the first task to the end of the second task
+        switchedLinesRes = secondFileRes[0] == (fourthTask + "\n") and secondFileRes[3] == firstTask.rstrip()
+
+        if(untouchedLinesRes and switchedLinesRes):
+            return 0
+
+        return 1
+
     def testEditTaskSwitchTasks():
         """
         Test editTask() with a normal file, numbers, and line. Should return true and switch the lines.
@@ -745,6 +798,88 @@ class Tests:
             return 0
 
         return 1
+
+    def testEditTaskInsertLastTask():
+        """
+        Test editTask() with a normal file, numbers, and line. Should return true and insert the taskNumber into the insertNumber. 
+        The lines should shift up or down depending on the taskNumber and inserNumber.
+        """ 
+        
+        firstTask = "Run testEditTaskInsertLastTask first\n"
+        secondTask = "Run testEditTaskInsertLastTask again\n"
+        thirdTask = "Run testEditTaskInsertLastTask and again"
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+        thirdFilePath = Tests.writeFile(thirdTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None or thirdFilePath == None):
+            return 1
+            
+        firstFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(firstFileRes) != 3 or firstFileRes[0] != firstTask or firstFileRes[1] != secondTask or firstFileRes[2] != thirdTask):
+            return 1
+
+        # First task to last postition. Second and third line should shift one line up.
+        taskNumber = 0
+        insertNumber = 2
+        taskNumbers = [taskNumber, insertNumber]
+        actionName = "insert"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumbers, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(not editRes):
+            return 1
+
+        secondFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # Note: The newline has been moved from the end of the first task to the end of the third task
+        if(len(secondFileRes) == 3 and secondFileRes[0] == secondTask and secondFileRes[1] == (thirdTask + "\n") and secondFileRes[2] == firstTask.rstrip()):
+            return 0
+
+        return 1
+
+    def testEditTaskInsertTask():
+        """
+        Test editTask() with a normal file, numbers, and line. Should return true and insert the taskNumber into the insertNumber. 
+        The lines should shift up or down depending on the taskNumber and inserNumber.
+        """ 
+        
+        firstTask = "Run testEditTaskInsertTask first\n"
+        secondTask = "Run testEditTaskInsertTask again\n"
+        thirdTask = "Run testEditTaskInsertTask and again"
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+        thirdFilePath = Tests.writeFile(thirdTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None or thirdFilePath == None):
+            return 1
+            
+        firstFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(firstFileRes) != 3 or firstFileRes[0] != firstTask or firstFileRes[1] != secondTask or firstFileRes[2] != thirdTask):
+            return 1
+
+        # Last task to first postition. First and second line should shift one line down.
+        taskNumber = 2
+        insertNumber = 0
+        taskNumbers = [taskNumber, insertNumber]
+        actionName = "insert"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumbers, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(not editRes):
+            return 1
+
+        secondFileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # Note: The newline has been moved from the end of the second task to the end of the third task
+        if(len(secondFileRes) == 3 and secondFileRes[0] == (thirdTask + "\n") and secondFileRes[1] == firstTask and secondFileRes[2] == secondTask.rstrip()):
+            return 0
+
+        return 1
         
     def testEditTaskIllegalTaskNumber():
         """
@@ -772,13 +907,13 @@ class Tests:
 
         return 1
         
-    def testEditTaskNoSwitchNumber():
+    def testEditTaskNoActionNumber():
         """
         Test editTask() with a normal file, tasknumber, but the second number is not in the array. Should return false and not alter the file.
         """ 
         
-        firstTask = "Run testEditTaskNoSwitchNumber first\n"
-        secondTask = "Run testEditTaskNoSwitchNumber again"
+        firstTask = "Run testEditTaskNoActionNumber first\n"
+        secondTask = "Run testEditTaskNoActionNumber again"
 
         firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
         secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)

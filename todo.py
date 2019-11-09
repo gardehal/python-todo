@@ -96,6 +96,29 @@ class Main:
                 argIndex += 2
                 continue
 
+
+
+
+            
+            elif(arg == "-insert"):
+                if(argC - argIndex < 2):
+                    print("Too few arguments to insert task, need at least 2: tasknumber (int), insertNumber(int)")
+                    quit()
+                
+                taskNumber = int(sys.argv[argIndex + 1]) - 1
+                insertNumber = int(sys.argv[argIndex + 2]) - 1
+
+                checkRes = Main.editTask([taskNumber, insertNumber], taskList, taskListPath, "insert", "w")
+                print(("Successfully" if checkRes else "Failed to") + " insert task.")
+
+                argIndex += 3
+                continue
+
+
+
+
+
+
             # Switch tasks position
             elif(arg in switchArgs):
                 if(argC - argIndex < 3):
@@ -284,11 +307,13 @@ class Main:
 
         try:
             taskNumber = int(taskRefrence[0])
+            
+            if(action == "switch" or action == "insert"):
+                actionNumber = int(taskRefrence[1])
         except Exception as e:
             print("\neditTask readFile error:")
             print(e)
             return False
-
 
         if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
             print("Invalid task number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
@@ -304,29 +329,38 @@ class Main:
         elif(action == "delete"):
             fileArray.pop(taskNumber)
 
-            # Delete first line, no need to strip revious line of newline
-            if(taskNumber != 0):
-                fileArray[len(fileArray) - 1] = fileArray[len(fileArray) - 1].rstrip()
-
         elif(action == "switch"):
-            try:
-                switchNumber = int(taskRefrence[1])
-                if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
-                    print("Invalid switch number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
-                    return False
-                    
-                tmp = fileArray[taskNumber].rstrip()
-                fileArray[taskNumber] = fileArray[switchNumber].rstrip() + "\n"
-                fileArray[switchNumber] = tmp
+            try:                    
+                tmp = fileArray[taskNumber]
+                fileArray[taskNumber] = fileArray[actionNumber].rstrip() + "\n"
+                fileArray[actionNumber] = tmp.rstrip() + "\n"
 
             except Exception as e:
-                print("\neditTask readFile error:")
+                print("\neditTask switch error:")
+                print(e)
+                return False
+
+        elif(action == "insert"):
+            try:
+                # fileArray[taskNumber] inserts into index actionNumber
+                tmp = fileArray[taskNumber].rstrip() + "\n"
+                fileArray[actionNumber] = fileArray[actionNumber].rstrip() + "\n"
+                
+                fileArray.pop(taskNumber)
+                fileArray.insert(actionNumber, tmp)
+
+            except Exception as e:
+                print("\neditTask insert error:")
                 print(e)
                 return False
             
         else:
-            print("Action not recognized, must be \"check\", \"delete\", \"switch\"")
+            print("Action not recognized, must be \"check\", \"delete\", \"switch\", \"insert\"")
             return False
+
+        # After modifying array, remove newline and trailing white space, if it exists
+        if(len(fileArray) > 1):
+            fileArray[len(fileArray) - 1] = fileArray[len(fileArray) - 1].rstrip()
 
         # Write back to array
         try:
@@ -367,9 +401,6 @@ class Main:
             return False
 
         return True
-
-    def mendTaskList(taskList, taskListPath):
-        print("WIP")
 
     def formatPrintList(taskList, taskListPath, retry = False):
         """
@@ -472,8 +503,8 @@ class Main:
 
         print(str(listTaskArgs) + ": prints an indexed list of tasks in the current task list.")
         # print(str(listListsArgs) + ": prints a list of all task lists.")
-        print(str(addArgs) + " + string + ?taskList: adds the following string to the current task list.")
-        print(str(deleteArgs) + " + number + ?taskList: deletes the corresponding task in the current task list.")
+        print(str(addArgs) + " + string: adds the following string to the current task list.")
+        print(str(deleteArgs) + " + number: deletes the corresponding task in the current task list.")
         print(str(checkArgs) + " + number: toggle the completetion of the corresponding task in the current task list.")
         print(str(switchArgs) + "+ number + number: switches the position of the two corresponding tasks in the current task list.")
         print(str(setListArgs) + ": string: sets the current task list to the string given.")
