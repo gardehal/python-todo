@@ -94,9 +94,17 @@ class Tests:
         Tests.after(useBeforeAfter)
         testFormatPrintListMalformedZeroOneRes = Tests.testFormatPrintListMalformedZeroOne()
         Tests.after(useBeforeAfter)
+        testFormatPrintListMalformedZeroOneInsertPositionRes = Tests.testFormatPrintListMalformedZeroOneInsertPosition()
+        Tests.after(useBeforeAfter)
         testFormatPrintListMalformedTaskTextRes = Tests.testFormatPrintListMalformedTaskText()
         Tests.after(useBeforeAfter)
         testFormatPrintListNormalFormatRes = Tests.testFormatPrintListNormalFormat()
+        Tests.after(useBeforeAfter)
+        formatTaskListsPrintNoDirectoryRes = Tests.formatTaskListsPrintNoDirectory()
+        Tests.after(useBeforeAfter)
+        formatTaskListsPrintEmptyDirectoryRes = Tests.formatTaskListsPrintEmptyDirectory()
+        Tests.after(useBeforeAfter)
+        formatTaskListsPrintTwoListsRes = Tests.formatTaskListsPrintTwoLists()
         Tests.after(useBeforeAfter)
         
         getFullFilePathRes = testGetFullFilePathDirectoryRes + testGetFullFilePathDirectoryAndFileRes
@@ -107,9 +115,11 @@ class Tests:
         editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskIllegalPermissionRes
         editFileRes2 = testEditTaskCheckMarkMalformedTaskRes + testEditTaskCheckMarkTaskRes + testEditTaskDeleteTaskRes + testEditTaskSwitchLastTaskRes + testEditTaskSwitchTasksRes
         editFileRes3 = testEditTaskInsertLastTaskRes + testEditTaskInsertTaskRes + testEditTaskIllegalTaskNumberRes + testEditTaskNoActionNumberRes
-        formatPrintListRes1 = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedTaskTextRes
-        formatPrintListRes2 = testFormatPrintListNormalFormatRes
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + formatPrintListRes1 + formatPrintListRes2
+        formatPrintListRes1 = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedZeroOneInsertPositionRes
+        formatPrintListRes2 = testFormatPrintListMalformedTaskTextRes + testFormatPrintListNormalFormatRes
+        formatTaskListsPrintRes = formatTaskListsPrintNoDirectoryRes + formatTaskListsPrintEmptyDirectoryRes + formatTaskListsPrintTwoListsRes
+
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -148,8 +158,12 @@ class Tests:
         Tests.printTestResult(testFormatPrintListNoFileRes, "testFormatPrintListNoFile")
         Tests.printTestResult(testFormatPrintListEmptyFileRes, "testFormatPrintListEmptyFile")
         Tests.printTestResult(testFormatPrintListMalformedZeroOneRes, "testFormatPrintListMalformedZeroOne")
+        Tests.printTestResult(testFormatPrintListMalformedZeroOneInsertPositionRes, "testFormatPrintListMalformedZeroOneInsertPosition")
         Tests.printTestResult(testFormatPrintListMalformedTaskTextRes, "testFormatPrintListMalformedTaskText")
         Tests.printTestResult(testFormatPrintListNormalFormatRes, "testFormatPrintListNormalFormat")
+        Tests.printTestResult(formatTaskListsPrintNoDirectoryRes, "formatTaskListsPrintNoDirectory")
+        Tests.printTestResult(formatTaskListsPrintEmptyDirectoryRes, "formatTaskListsPrintEmptyDirectory")
+        Tests.printTestResult(formatTaskListsPrintTwoListsRes, "formatTaskListsPrintTwoLists")
 
         print("\n" + ("All tests passed." if finalRes == 0 else (str(finalRes) + " test(s) failed.")))
         if(useBeforeAfter == 0):
@@ -1026,12 +1040,49 @@ class Tests:
         normalLineCheck = fileRes[0] == firstTask and fileRes[1] == secondTask
 
 
-        # Thid line is missing a completed number and fourth line has a negative number. 
+        # Third line is missing a completed number and fourth line has a negative number. 
         # Both should be rectified in the formating list and returned, as well as saved in the file.
         thirdLineCheck = fileRes[2] == "0 " + thirdTask
         fourthLineCheck = fileRes[3] == "0 " + fourthTask # Note that the "-1" is not removed
 
         if(normalLineCheck and thirdLineCheck and fourthLineCheck):
+            return 0
+
+        return 1
+
+    def testFormatPrintListMalformedZeroOneInsertPosition():
+        """
+        Test formatPrintList() with a file which has a malformed task line (no 0/1). Should return an array of the lines in a special format.
+        """ 
+
+        firstTask = "0 Run testFormatPrintListMalformedZeroOne first normal entree\n"
+        secondTask = "Run testFormatPrintListMalformedZeroOne no completed number\n"
+        thirdTask = "0 Run testFormatPrintListMalformedZeroOne second normal entree\n"
+        fourthTask = "0 Run testFormatPrintListMalformedZeroOne third normal entree"
+
+        firstFilePath = Tests.writeFile(firstTask, testTaskList, testDirectoryName)
+        secondFilePath = Tests.writeFile(secondTask, testTaskList, testDirectoryName)
+        thirdFilePath = Tests.writeFile(thirdTask, testTaskList, testDirectoryName)
+        fourthFilePath = Tests.writeFile(fourthTask, testTaskList, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None or thirdFilePath == None or fourthFilePath == None):
+            return 1
+
+        formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+        # Only check on array size, format should be checked in another test
+        if(len(formatRes) != 4):
+            return 1
+        
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # First, third, and fourth task should be fine, and in the same positions
+        normalLineCheck = fileRes[0] == firstTask and fileRes[2] == thirdTask and fileRes[3] == fourthTask
+
+        # Second line is missing a completed number. The formatPrintList should detect, fix (add leading "0 "), and insert the line into the same position it was.
+        secondLineCheck = fileRes[1] == "0 " + secondTask
+
+        if(normalLineCheck and secondLineCheck):
             return 0
 
         return 1
@@ -1103,6 +1154,61 @@ class Tests:
         fileCheck = fileRes[0] == firstTask and fileRes[1] == secondTask
 
         if(fileCheck and formatCheck):
+            return 0
+
+        return 1
+                
+    def formatTaskListsPrintNoDirectory():
+        """
+        Test formatTaskListsPrint() with no directory, should return an empty array.
+        """
+
+        dirPath = ""
+
+        formatRes = todo.Main.formatTaskListsPrint(dirPath)
+
+        if(type(formatRes) == list and len(formatRes) == 0):
+            return 0
+
+        return 1
+
+    def formatTaskListsPrintEmptyDirectory():
+        """
+        Test formatTaskListsPrint() with an empty directory, should return an empty array.
+        """
+
+        dirPath = os.path.join(sys.path[0], testDirectoryName)
+
+        if(not os.path.exists(dirPath)):
+            os.mkdir(dirPath)
+
+        formatRes = todo.Main.formatTaskListsPrint(dirPath)
+
+        if(type(formatRes) == list and len(formatRes) == 0):
+            return 0
+
+        return 1
+
+    def formatTaskListsPrintTwoLists():
+        """
+        Test formatTaskListsPrint() with a directory with two lists (files), should return the filenames without the ".txt".
+        """
+
+        firstTaskFirstList = "Run formatTaskListsPrintTwoLists first task first list"
+        firstTaskSecondList = "Run formatTaskListsPrintTwoLists first task second list"
+
+        firstListName = "test-first-task-list"
+        secondListName = "test-second-task-list"
+
+        firstFilePath = Tests.writeFile(firstTaskFirstList, firstListName, testDirectoryName)
+        secondFilePath = Tests.writeFile(firstTaskSecondList, secondListName, testDirectoryName)
+
+        if(firstFilePath == None or secondFilePath == None):
+            return 1
+
+        formatRes = todo.Main.formatTaskListsPrint(testDirectoryName)
+
+        if(len(formatRes) == 2 and formatRes[0] == firstListName and formatRes[1] == secondListName):
             return 0
 
         return 1

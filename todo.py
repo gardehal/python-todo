@@ -32,10 +32,19 @@ class Main:
         while argIndex < argC:
             arg = sys.argv[argIndex].lower()
 
-            # List curret todo list ()
+            # List contents of curret task list
             if(arg in listTaskArgs):
                 formatRes = Main.formatPrintList(taskList, taskListPath)
                 for line in formatRes:
+                    print(line)
+
+                argIndex += 1
+                continue
+
+            # List all tasklists in directory "tasklists"
+            if(arg in listListsArgs):
+                formatListRes = Main.formatTaskListsPrint(taskListPath)
+                for line in formatListRes:
                     print(line)
 
                 argIndex += 1
@@ -96,28 +105,19 @@ class Main:
                 argIndex += 2
                 continue
 
-
-
-
-            
-            elif(arg == "-insert"):
-                if(argC - argIndex < 2):
-                    print("Too few arguments to insert task, need at least 2: tasknumber (int), insertNumber(int)")
-                    quit()
+            # elif(arg == "-insert"):
+            #     if(argC - argIndex < 2):
+            #         print("Too few arguments to insert task, need at least 2: tasknumber (int), insertNumber(int)")
+            #         quit()
                 
-                taskNumber = int(sys.argv[argIndex + 1]) - 1
-                insertNumber = int(sys.argv[argIndex + 2]) - 1
+            #     taskNumber = int(sys.argv[argIndex + 1]) - 1
+            #     insertNumber = int(sys.argv[argIndex + 2]) - 1
 
-                checkRes = Main.editTask([taskNumber, insertNumber], taskList, taskListPath, "insert", "w")
-                print(("Successfully" if checkRes else "Failed to") + " insert task.")
+            #     checkRes = Main.editTask([taskNumber, insertNumber], taskList, taskListPath, "insert", "w")
+            #     print(("Successfully" if checkRes else "Failed to") + " insert task.")
 
-                argIndex += 3
-                continue
-
-
-
-
-
+            #     argIndex += 3
+            #     continue
 
             # Switch tasks position
             elif(arg in switchArgs):
@@ -420,7 +420,6 @@ class Main:
             print("The task list " + taskList + " is empty.")
             return []
         
-
         printArray = []
 
         nTasks = len(tasks)
@@ -442,9 +441,6 @@ class Main:
                 
                 printArray.append(str(index + 1) + "\t" + str(taskCompleted) + "\t\t" + str(taskText) + "\t" + str(taskReset))
             except:
-                # TODO extract to method
-                # mendRes = Main.mendTaskList(taskList, taskListPath)
-
                 # Malformed line, attempt to fix it, if it's empty, remove it.
                 taskLine = str(task).rstrip()
                 
@@ -456,9 +452,7 @@ class Main:
                 elif(taskLine[0] != "0" and taskLine[0] != "1"):
                     Main.editTask([index], taskList, taskListPath, "delete")
                     Main.addTask(taskLine, taskList, taskListPath)
-
-                    # TODO insert new task line to index where it was
-                    # Main.editTask([len(tasks), index], taskList, taskListPath, "insert")
+                    Main.editTask([len(tasks) - 1, index], taskList, taskListPath, "insert")
 
                 # Unknown error, implore the user fix and quit
                 else:
@@ -473,11 +467,25 @@ class Main:
 
         return printArray
 
-    # no completed number
-    # 0 next is blank
+    def formatTaskListsPrint(taskListPath):
+        """
+        A method for formatting the task lists in a legible manner. \n
+        string taskListPath
+        """
 
-    # 0 next is no task
-    # 0
+        if(len(taskListPath) < 1):
+            return []
+
+        path = Main.getFullFilePath(taskListPath)
+
+        printArray = []
+        for f in os.listdir(path):
+            filePath = os.path.join(path, f)
+            if(os.path.isfile(filePath)):
+                fileName = f.split(".")
+                printArray.append(fileName[0])
+
+        return printArray
 
     # listTaskArgs = ["-tasks", "-t"]
     # listListsArgs = ["-lists", "-l"]
@@ -502,7 +510,7 @@ class Main:
         print("\n")
 
         print(str(listTaskArgs) + ": prints an indexed list of tasks in the current task list.")
-        # print(str(listListsArgs) + ": prints a list of all task lists.")
+        print(str(listListsArgs) + ": prints a list of all task lists.")
         print(str(addArgs) + " + string: adds the following string to the current task list.")
         print(str(deleteArgs) + " + number: deletes the corresponding task in the current task list.")
         print(str(checkArgs) + " + number: toggle the completetion of the corresponding task in the current task list.")
