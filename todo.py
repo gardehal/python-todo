@@ -385,6 +385,27 @@ class Main:
         string allTaskListsPath
         """
 
+        # Not forbidden but poor practice:
+        #   (space)
+        # Forbidden chars in filenames (Windows):
+        # From stackoverflow.com/questions/1976007/what-characters-are-forbidden-in-windows-and-linux-directory-names
+        # < (less than)
+        # > (greater than)
+        # : (colon - sometimes works, but is actually NTFS Alternate Data Streams)
+        # " (double quote)
+        # / (forward slash)
+        # \ (backslash)
+        # | (vertical bar or pipe)
+        # ? (question mark)
+        # * (asterisk)
+
+        replaceChars = [" ", "<", ">", ":", "\"", "/", "\\", "|", "?", "*"]
+        # sanitizedTaskList = str(taskList).replace(replaceChars, "-")
+        sanitizedTaskList = taskList
+
+        for char in replaceChars:
+            sanitizedTaskList = str(sanitizedTaskList).replace(char, "-")
+
         currentTaskList = Main.getCurrentTaskList(allTaskListsFileName, allTaskListsPath)
         if(taskList == currentTaskList):
             return True
@@ -392,7 +413,7 @@ class Main:
         allTaskListsFullPath = Main.getFullFilePath(allTaskListsPath, allTaskListsFileName)
         try:
             with open(allTaskListsFullPath, "w") as file:
-                file.write(taskList)
+                file.write(sanitizedTaskList)
 
             file.close()
         except Exception as e:

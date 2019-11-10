@@ -35,7 +35,6 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 
 ### TODO:
 - check spelling
-- setlist filename sanitiation (remove "." "\" etc)
 - groom/trigger reset functions + redo tests accordingly
 
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed

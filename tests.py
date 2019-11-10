@@ -18,10 +18,10 @@ class Tests:
         """
 
         # For checking individual tests
-        # testFormatPrintListMalformedTaskTextRes = Tests.testFormatPrintListMalformedTaskText()
+        # testIndividualRes = Tests.testSetListIllegalCharacters()
         # Tests.after(useBeforeAfter)
         
-        # Tests.printTestResult(testFormatPrintListMalformedTaskTextRes, "testFormatPrintListMalformedTaskText")
+        # Tests.printTestResult(testIndividualRes, "testIndividual")
         # quit()
 
         if(useBeforeAfter == 0):
@@ -59,6 +59,10 @@ class Tests:
         testSetListNoFileRes = Tests.testSetListNoFile()
         Tests.after(useBeforeAfter)
         testSetListToSameListRes = Tests.testSetListToSameList()
+        Tests.after(useBeforeAfter)
+        testSetListIllegalCharactersRes = Tests.testSetListIllegalCharacters()
+        Tests.after(useBeforeAfter)
+        testSetListNormalListRes = Tests.testSetListNormalList()
         Tests.after(useBeforeAfter)
         testEditTaskNoFileRes = Tests.testEditTaskNoFile()
         Tests.after(useBeforeAfter)
@@ -111,7 +115,7 @@ class Tests:
         getCurrentTaskListRes = testGetCurrentTaskListNoFileRes + testGetCurrentTaskListFileExistsRes
         addTaskRes = testAddTaskEmptyListRes + testAddTaskFaultyFileRes + testAddTaskNoFileRes + testAddTaskNoTaskRes + testAddTaskNewTaskSameTaskListRes 
         loadFileRes = testloadFileNoListRes + testloadFileEmptyListRes + testloadFileOneTaskRes
-        setListRes = testSetListNoFileRes + testSetListToSameListRes
+        setListRes = testSetListNoFileRes + testSetListToSameListRes + testSetListIllegalCharactersRes + testSetListNormalListRes
         editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskIllegalPermissionRes
         editFileRes2 = testEditTaskCheckMarkMalformedTaskRes + testEditTaskCheckMarkTaskRes + testEditTaskDeleteTaskRes + testEditTaskSwitchLastTaskRes + testEditTaskSwitchTasksRes
         editFileRes3 = testEditTaskInsertLastTaskRes + testEditTaskInsertTaskRes + testEditTaskIllegalTaskNumberRes + testEditTaskNoActionNumberRes
@@ -141,6 +145,8 @@ class Tests:
         Tests.printTestResult(testloadFileOneTaskRes, "testloadFileOneTask")
         Tests.printTestResult(testSetListNoFileRes, "testSetListNoFile")
         Tests.printTestResult(testSetListToSameListRes, "testSetListToSameList")
+        Tests.printTestResult(testSetListIllegalCharactersRes, "testSetListIllegalCharacters")
+        Tests.printTestResult(testSetListNormalListRes, "testSetListNormalList")
         Tests.printTestResult(testEditTaskNoFileRes, "testEditTaskNoFile")
         Tests.printTestResult(testEditTaskNoActionRes, "testEditTaskNoAction")
         Tests.printTestResult(testEditTaskNoTaskNumberRes, "testEditTaskNoTaskNumber")
@@ -492,7 +498,7 @@ class Tests:
         Test setList with no pre-exisiting file. The should return true and create a file and write the newList into it as the only line.
         """
 
-        newList = "setListNoFile list"
+        newList = "setListNoFile-list"
 
         filePath = os.path.join(sys.path[0], testAllTaskListsFileName) + ".txt"
         if(os.path.isfile(filePath)):
@@ -514,8 +520,8 @@ class Tests:
         Test setList for overriding a existing tasklist in a file. Should return true, and the newList should be the only line in the file.
         """
 
-        oldList = "some other list"
-        newList = "setListToSameList list"
+        oldList = "some-other-list"
+        newList = "setListToSameList-list"
         
         filePath = Tests.writeFile(oldList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
 
@@ -529,6 +535,49 @@ class Tests:
         fileCheck = len(fileRes) == 1 and fileRes[0] == newList
 
         if(setRes and os.path.isfile(filePath) and fileCheck):
+            return 0
+
+        return 1
+
+    def testSetListIllegalCharacters():
+        """
+        Test setList with a list name that contains illegal characters. The method should replace illegal characters 
+        ([" ", "<", ">", ":", "\"", "/", "\\", "|", "?", "*"]) and replace them with "-", return true, and write the list name to the file.
+        """
+        
+        illegalChars = [" ", "<", ">", ":", "\"", "/", "\\", "|", "?", "*"]
+        illegalString = ""
+        for char in illegalChars:
+            illegalString += char
+
+        newIllegalList = "start" + illegalString + "end"
+        newIllegalListResult = "start" + ("-" * len(illegalChars)) + "end"
+
+        setRes = todo.Main.setList(newIllegalList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
+
+        fileRes = Tests.readFile(testAllTaskListsFileName, testAllTaskListsDirectoryName)
+
+        fileCheck = len(fileRes) == 1 and fileRes[0] == newIllegalListResult
+
+        if(setRes and fileCheck):
+            return 0
+
+        return 1
+
+    def testSetListNormalList():
+        """
+        Test setList with a normal list name. This should return true and write the list name in the file.
+        """
+        
+        newList = "testSetListNormalList-my-list"
+
+        setRes = todo.Main.setList(newList, testAllTaskListsFileName, testAllTaskListsDirectoryName)
+
+        fileRes = Tests.readFile(testAllTaskListsFileName, testAllTaskListsDirectoryName)
+
+        fileCheck = len(fileRes) == 1 and fileRes[0] == newList
+
+        if(setRes and fileCheck):
             return 0
 
         return 1
