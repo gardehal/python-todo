@@ -580,7 +580,7 @@ class Main:
         print("Arguments marked with ? are optional.")
         print("All arguments that triggers a function start with dash(-).")
         print("All arguments must be separated by space only.")
-        print("To submit sentences with spaces beween words, use quotation marks (\", \'), othwerwise they will be counted as separate arguments.")
+        print("To submit sentences with spaces between words, use quotation marks (\", \'), otherwise they will be counted as separate arguments.")
         print("\te.g.: $ python todo.py -add \"This is a sentence.\"")
         print("\n")
 
@@ -588,7 +588,7 @@ class Main:
         print(str(listListsArgs) + ": prints a list of all task lists.")
         print(str(addArgs) + " + string: adds the following string to the current task list.")
         print(str(deleteArgs) + " + number: deletes the corresponding task in the current task list.")
-        print(str(checkArgs) + " + number: toggle the completetion of the corresponding task in the current task list.")
+        print(str(checkArgs) + " + number: toggle the completion of the corresponding task in the current task list.")
         print(str(switchArgs) + "+ number + number: switches the position of the two corresponding tasks in the current task list.")
         print(str(setListArgs) + ": string: sets the current task list to the string given.")
         print(str(helpArgs) + ": prints this information about input arguments.")
