@@ -1,6 +1,7 @@
 import sys
 import time
 import os
+import datetime
 
 import tests
 
@@ -53,25 +54,23 @@ class Main:
             # Add a task
             elif(arg in addArgs):
                 if(argC - argIndex < 2):
-                    print("Too few arguments to save task, need at least 1: task (string), resetChecked (enum)(optional)")
+                    print("Too few arguments to save task, need at least 1: task (string), resetInterval (enum)(optional)")
                     quit()
 
                 task = sys.argv[argIndex + 1]
 
-                # TODO: reset args for automatically resetting the "completed" value after a predefined time, consider having a interval and a datetime so the reset triggers on an interval from datetime given
-                # hour reset after completed easiest? h 2 -> write Z or T + datetime first in line, when next list is called, check timestamp, compare to reset time in args, 
-                #   if past, uncheck (or better set utc datetime + reset time check if datetime is current or in past, if yes, uncheck)
-                # datetime?
-                # enum: daily, hourly, month, year, weekly.. ?
-                # give datetime + interval, or just interval (datetime = now). When interval interact with datetime, reset, then set new datetime = old datetime + interval?
-                    # better to set datetime + interval = datetimeTriggerAlert? vs check datet
-
+                # Pick up reset args if there are any
+                resetInterval = None
+                resetDateTime = None
                 optionalArgIndex = 0
-                if(argC > argIndex + 3 and sys.argv[argIndex + 2][0] != "-"):
-                    resetChecked = sys.argv[argIndex + 2]
+                if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
+                    resetInterval = sys.argv[argIndex + 2]
                     optionalArgIndex += 1
+                    if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
+                        resetDateTime = sys.argv[argIndex + 3]
+                        optionalArgIndex += 1
                     
-                saveRes = Main.addTask(task, taskList, taskListPath)
+                saveRes = Main.addTask(task, taskList, taskListPath, resetInterval, resetDateTime)
                 print("Add task " + ("was successful." if saveRes else "failed."))
 
                 argIndex += 2 + optionalArgIndex
@@ -168,6 +167,7 @@ class Main:
 
             argIndex += 1
 
+        # No arguments, print the contents of the current tasklist
         if(argC < 2):
             formatRes = Main.formatPrintList(taskList, taskListPath)
             for line in formatRes:
@@ -219,16 +219,70 @@ class Main:
 
         return None
 
-    def addTask(task, taskList, taskListPath):
+    def addTask(task, taskList, taskListPath, resetInterval = None, resetDateTime = None):
         """
-        A method for saving/adding a task "task" to the list "taskList" in directory "taskListPath". \n
+        A method for saving/adding a task "task" to the list "taskList" in directory "taskListPath". If the optional argument resetInterval (int, seconds) is given,
+        the format method will reset the tasks completeion status after the resetInterval period, from the datetime when the task was added.
+        If the argument resetDateTime (datetime) is also given, the reset will trigger on the interval from that datetime. \n
         string task \n
         string taskList \n
-        string taskListPath
+        string taskListPath \n
+        int resetInterval \n
+        Datetime resetDateTime
         """
 
         if(task.rstrip() == ""):
             return False
+
+            
+
+        # TODO: reset args for automatically resetting the "completed" value after a predefined time, consider having a interval and a datetime so the reset triggers on an interval from datetime given
+        # hour reset after completed easiest? h 2 -> write Z or T + datetime first in line, when next list is called, check timestamp, compare to reset time in args, 
+        #   if past, uncheck (or better set utc datetime + reset time check if datetime is current or in past, if yes, uncheck)
+        # datetime?
+        # enum: daily, hourly, month, year, weekly.. ?
+        # give datetime + interval, or just interval (datetime = now). When interval interact with datetime, reset, then set new datetime = old datetime + interval?
+            # better to set datetime + interval = datetimeTriggerAlert? vs check datet
+
+        # !interval%datetime
+
+        resetString = ""
+
+        # Deal with resetInterval and resetDateTime
+        if(resetInterval != None):
+            print("reset args")
+
+            try:
+                sanitizedResetInterval = int(resetInterval)
+
+                # About 3.8 months limit
+                if(sanitizedResetInterval > 9999999 or sanitizedResetInterval < 1):
+                    raise Exception
+            except Exception as e:
+                print("\naddTask reset arguments error:")
+                print(e)
+                return False
+            
+
+            if(resetDateTime != None):
+                datetimeArray = resetDateTime.split("-")
+                if(len(datetimeArray) != 3):
+                    return False
+
+                now = datetime.datetime.now()
+                # Year = current, month, day, hour from users input, minute, seconds, etc. default 0
+                sanitizedResetDateTime = datetime.datetime(now.year, int(datetimeArray[0]), int(datetimeArray[1]), int(datetimeArray[2]))
+            else:
+                now = datetime.datetime.now()
+                sanitizedResetDateTime = datetime.datetime(now.year, now.month, now.day, now.hour)
+
+            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T") + " "
+
+            
+            print("resetString " + str(resetString))
+
+
+
 
         loadTaskRes = Main.loadFile(taskList, taskListPath)
         fileExists = True if len(loadTaskRes) > 0 else False
@@ -239,7 +293,7 @@ class Main:
             os.mkdir(taskListDirectory)
 
         fullPath = Main.getFullFilePath(taskListPath, taskList)
-        taskLine = ("\n" if fileExists else "") + "0 " + task
+        taskLine = ("\n" if fileExists else "") + "0 " + resetString + task
 
         try:
             with open(fullPath, "a") as file:

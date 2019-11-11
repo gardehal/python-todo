@@ -42,4 +42,4 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 - delete all checked tasks
 - uncheck all
 - rename formatPrintList to formatTasksPrint?
-- formatPrintList when empty should return an array of one line: ["The current list (listname) is empty."]
+- formatPrintList when empty should return an array of one line: ["The current list (listname) is empty."] or object
