@@ -29,12 +29,11 @@ Python console program for managing TODO-tasks.
 
 ## My Thoughts
 
-I wanted a way to manage some tasks I had to do (henceforth "TODOs") that sometime repeated daily and the mental list got out of hand. I needed a way to write them down and keep them handy without having to plaster my wall with post-it notes, which is why I thought about making this program. I am aware that there are programs like this out there, as with some of the other projects I have done, but I need some specific functions to help me manage my lists. 
+I wanted a way to manage some tasks I had to do that sometime repeated daily and the mental list got out of hand. I needed a way to write them down and keep them handy without having to plaster my wall with post-it notes, which is why I thought about making this program. I am aware that there are programs like this out there, as with some of the other projects I have done, but I need some specific functions to help me manage my lists. 
 
 This is not the first time I've made a TODO list, but the previous one is dated and it would be more work and less beneficial rewriting  the old code (PHP). I was unsure what language to choose for this project, but I'm going with Python as I enjoy writing  it and have no need for a online version just yet. I did consider learning Ember or Vue or something similar to cultivate my frontend skills, and might redo this project with that in the future.
 
 ## Conclusion
-
 
 - Better commenting in method
 - can be better at catching errors
@@ -45,7 +44,7 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 
 ### TODO:
 - check spelling
-- groom/trigger reset functions + redo tests accordingly
+- groom/trigger reset functions + tests + update help
 - write Conclusion
 
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed

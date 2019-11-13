@@ -2,6 +2,7 @@ import sys
 import time
 import os
 import datetime
+import calendar
 
 import tests
 
@@ -11,6 +12,7 @@ addArgs = ["-add", "-a"]
 deleteArgs = ["-delete", "-d"]
 checkArgs = ["-check", "-c", "-x"]
 switchArgs = ["-switch", "-s"]
+insertArgs = ["-insert", "-i"]
 setListArgs = ["-setlist", "-sl"]
 helpArgs = ["-help", "-h"]
 testArgs = ["-test"]
@@ -59,6 +61,34 @@ class Main:
 
                 task = sys.argv[argIndex + 1]
 
+                # declare interval = 0 var
+                # Run though the arguments until next arg [0] == "-" or end of args array
+                # interval += value * period to seconds
+                # default, no letter or period given, is hours
+                # month1 or mo1 = 1 month
+                # week1 or w1 = 1 week
+                # day1 or d1 = 1 day
+                # hour1 or h1 = 1 hour (minimum 1 hour?)
+                # when nextarg[0] == "-" break
+                # run method with interval totalx
+
+                # totalResetTime = 0
+
+                # intervalIndex = argIndex
+                # while(intervalIndex < len(argC)):
+                #     if(args[intervalIndex][0] == "-"):
+                #         break
+
+                #     if(args[intervalIndex][0] == "h"):
+                #         print("increment hour")
+                #         totalResetTime += args[intervalIndex][1:]
+                #         intervalIndex += 1
+                #         continue
+
+                #     # etc
+
+                #     intervalIndex += 1
+
                 # Pick up reset args if there are any
                 resetInterval = None
                 resetDateTime = None
@@ -104,19 +134,19 @@ class Main:
                 argIndex += 2
                 continue
 
-            # elif(arg == "-insert"):
-            #     if(argC - argIndex < 2):
-            #         print("Too few arguments to insert task, need at least 2: tasknumber (int), insertNumber(int)")
-            #         quit()
+            elif(arg in insertArgs):
+                if(argC - argIndex < 2):
+                    print("Too few arguments to insert task, need at least 2: tasknumber (int), insertNumber(int)")
+                    quit()
                 
-            #     taskNumber = int(sys.argv[argIndex + 1]) - 1
-            #     insertNumber = int(sys.argv[argIndex + 2]) - 1
+                taskNumber = int(sys.argv[argIndex + 1]) - 1
+                insertNumber = int(sys.argv[argIndex + 2]) - 1
 
-            #     checkRes = Main.editTask([taskNumber, insertNumber], taskList, taskListPath, "insert", "w")
-            #     print(("Successfully" if checkRes else "Failed to") + " insert task.")
+                checkRes = Main.editTask([taskNumber, insertNumber], taskList, taskListPath, "insert", "w")
+                print(("Successfully" if checkRes else "Failed to") + " insert task.")
 
-            #     argIndex += 3
-            #     continue
+                argIndex += 3
+                continue
 
             # Switch tasks position
             elif(arg in switchArgs):
@@ -234,24 +264,17 @@ class Main:
         if(task.rstrip() == ""):
             return False
 
-            
-
-        # TODO: reset args for automatically resetting the "completed" value after a predefined time, consider having a interval and a datetime so the reset triggers on an interval from datetime given
-        # hour reset after completed easiest? h 2 -> write Z or T + datetime first in line, when next list is called, check timestamp, compare to reset time in args, 
-        #   if past, uncheck (or better set utc datetime + reset time check if datetime is current or in past, if yes, uncheck)
-        # datetime?
-        # enum: daily, hourly, month, year, weekly.. ?
-        # give datetime + interval, or just interval (datetime = now). When interval interact with datetime, reset, then set new datetime = old datetime + interval?
-            # better to set datetime + interval = datetimeTriggerAlert? vs check datet
-
-        # !interval%datetime
+        # TODO reset
+        # 1. Finish add
+        # - 2. Program input arguments (resetInterval, month, week, day, hour options)
+        # 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
+        # 4. Tests
+        # 5. Documentation
 
         resetString = ""
 
         # Deal with resetInterval and resetDateTime
         if(resetInterval != None):
-            print("reset args")
-
             try:
                 sanitizedResetInterval = int(resetInterval)
 
@@ -263,26 +286,73 @@ class Main:
                 print(e)
                 return False
             
-
+            # hh:dd-mm-yyyy
             if(resetDateTime != None):
-                datetimeArray = resetDateTime.split("-")
-                if(len(datetimeArray) != 3):
-                    return False
+                try:
+                    now = datetime.datetime.now()
+                    hour = None
+                    day = None
+                    month = None
+                    year = None
 
-                now = datetime.datetime.now()
-                # Year = current, month, day, hour from users input, minute, seconds, etc. default 0
-                sanitizedResetDateTime = datetime.datetime(now.year, int(datetimeArray[0]), int(datetimeArray[1]), int(datetimeArray[2]))
+                    # Hour is the minimum expected input for datetime
+                    hourDateSplit = resetDateTime.split(":")
+                    hour = int(hourDateSplit[0])
+                    if(hour < 0 or hour > 23):
+                        return False
+
+                    dateArray = []
+                    if(len(hourDateSplit) > 1):
+                        dateArray = hourDateSplit[1].split("-")
+
+                        # Convert all elements to ints
+                        dateArrayIndex = 0
+                        while(dateArrayIndex < len(dateArray)):
+                            dateArray[dateArrayIndex] = int(dateArray[dateArrayIndex])
+                            dateArrayIndex += 1
+
+                    # Note: The inverted structure of year, month, day is so we can use year and month to get maxDate.
+                    # Get year from input, if none use current
+                    if(len(dateArray) > 2 and dateArray[2]):
+                        year = dateArray[2]
+                    else:
+                        year = now.year
+
+                    # Get month from input, if none use current
+                    if(len(dateArray) > 1 and dateArray[1] and dateArray[1] > 0 and dateArray[1] < 13):
+                        month = dateArray[1]
+                    else:
+                        month = now.month
+                        
+                    # Get day from input, if none use current
+                    # Thanks to https://stackoverflow.com/questions/42950/get-last-day-of-the-month for the line
+                    maxDate = calendar.monthrange(year, month)[1]
+                    if(len(dateArray) > 0 and dateArray[0] and dateArray[0] > 0 and dateArray[0] < (maxDate + 1)):
+                        day = dateArray[0]
+                    else:
+                        day = now.day
+
+                    # Year, month, day, hour from users input or current, minute, seconds, etc. default 0
+                    sanitizedResetDateTime = datetime.datetime(year, month, day, hour)
+
+                except Exception as e:
+                    print("\naddTask datetime arguments error:")
+                    print(e)
+                    return False
+                
             else:
                 now = datetime.datetime.now()
                 sanitizedResetDateTime = datetime.datetime(now.year, now.month, now.day, now.hour)
 
-            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T") + " "
+            # interval and datetime format:
+            # !interval%datetime
+            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T")
 
-            
-            print("resetString " + str(resetString))
+            incrementedRestString = str(Main.incrementResetDateTime(resetString)) + " "
+            if(incrementedRestString.strip() == None):
+                return False
 
-
-
+            print("Task will reset every " + str(sanitizedResetInterval/60/60) + " hours from the date and time " + str(sanitizedResetDateTime))
 
         loadTaskRes = Main.loadFile(taskList, taskListPath)
         fileExists = True if len(loadTaskRes) > 0 else False
@@ -293,7 +363,7 @@ class Main:
             os.mkdir(taskListDirectory)
 
         fullPath = Main.getFullFilePath(taskListPath, taskList)
-        taskLine = ("\n" if fileExists else "") + "0 " + resetString + task
+        taskLine = ("\n" if fileExists else "") + "0 " + incrementedRestString + task
 
         try:
             with open(fullPath, "a") as file:
@@ -562,14 +632,70 @@ class Main:
 
         return printArray
 
-    # listTaskArgs = ["-tasks", "-t"]
-    # listListsArgs = ["-lists", "-l"]
-    # deleteArgs = ["-delete", "-d"]
-    # checkArgs = ["-check", "-c", "-x"]
-    # switchArgs = ["-switch", "-s"]
-    # setListArgs = ["-setList", "-sl"]
-    # helpArgs = ["-help", "-h"]
-    # testArgs = ["-test"]
+    def incrementResetDateTime(resetString):
+        """
+        Return the incremented resetString of the given resetString. \n
+        string resetString
+        """
+
+        incrementedDateTime = None
+
+        try:
+            # !resetIntervalZdateTtime
+            # !123Z2019-01-02T03:04:05 -> !123, 2019-01-02T03:04:05 
+            resetStringIncrementDateTimeSplit = resetString.split("Z")
+
+            # !123 -> 123
+            increment = int(resetStringIncrementDateTimeSplit[0][1:])
+
+            # 2019-01-02T03:04:05 -> 2019-01-02, 03:04:05 
+            dateTimeSplit = resetStringIncrementDateTimeSplit[1].split("T")
+
+            # 2019-01-02  -> 2019, 01, 02
+            dateArray = dateTimeSplit[0].split("-")
+
+            # 03:04:05  -> 03, 04, 05 
+            timeArray = dateTimeSplit[1].split(":")
+
+            # Convert to ints
+            dateArrayIndex = 0
+            while(dateArrayIndex < len(dateArray)):
+                dateArray[dateArrayIndex] = int(dateArray[dateArrayIndex])
+                dateArrayIndex += 1
+
+            timeArrayIndex = 0
+            while(timeArrayIndex < len(timeArray)):
+                timeArray[timeArrayIndex] = int(timeArray[timeArrayIndex])
+                timeArrayIndex += 1
+
+            # Increment datetime with the datetime library
+            oldDateTime = datetime.datetime(dateArray[0], dateArray[1], dateArray[2], timeArray[0], timeArray[1], timeArray[2])
+            newDateTime = oldDateTime + datetime.timedelta(seconds = increment)
+
+            # Assemble the resetString format !resetIntervalZdateTtime
+            joinedNewDateTime = str(newDateTime).replace(" ", "T")
+            incrementedDateTime = "!" + str(increment) + "Z" + joinedNewDateTime
+
+            return incrementedDateTime
+
+        except Exception as e:
+            print("\nincrementResetDateTime error:")
+            print(e)
+            return incrementedDateTime
+
+        return incrementedDateTime
+
+    {
+        # listTaskArgs = ["-tasks", "-t"]
+        # listListsArgs = ["-lists", "-l"]
+        # deleteArgs = ["-delete", "-d"]
+        # checkArgs = ["-check", "-c", "-x"]
+        # switchArgs = ["-switch", "-s"]
+        # insertArgs = ["-insert", "-i"]
+        # setListArgs = ["-setList", "-sl"]
+        # helpArgs = ["-help", "-h"]
+        # testArgs = ["-test"]
+    }
 
     def printHelp():
         """
@@ -590,6 +716,7 @@ class Main:
         print(str(deleteArgs) + " + number: deletes the corresponding task in the current task list.")
         print(str(checkArgs) + " + number: toggle the completion of the corresponding task in the current task list.")
         print(str(switchArgs) + "+ number + number: switches the position of the two corresponding tasks in the current task list.")
+        print(str(insertArgs) + "+ number + number: inserts the task (first number) into position of the second number.")
         print(str(setListArgs) + ": string: sets the current task list to the string given.")
         print(str(helpArgs) + ": prints this information about input arguments.")
         print(str(testArgs) + ": runs unit tests and prints the result.")
