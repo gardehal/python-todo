@@ -34,6 +34,7 @@ class Main:
         argIndex = 1
         while argIndex < argC:
             arg = sys.argv[argIndex].lower()
+            print("arg: " + str(sys.argv[argIndex]))
 
             # List contents of curret task list
             if(arg in listTaskArgs):
@@ -59,48 +60,88 @@ class Main:
                     print("Too few arguments to save task, need at least 1: task (string), resetInterval (enum)(optional)")
                     quit()
 
+                # Account for addArgs argument and task string
                 task = sys.argv[argIndex + 1]
-
-                # declare interval = 0 var
-                # Run though the arguments until next arg [0] == "-" or end of args array
-                # interval += value * period to seconds
-                # default, no letter or period given, is hours
-                # month1 or mo1 = 1 month
-                # week1 or w1 = 1 week
-                # day1 or d1 = 1 day
-                # hour1 or h1 = 1 hour (minimum 1 hour?)
-                # when nextarg[0] == "-" break
-                # run method with interval totalx
-
-                # totalResetTime = 0
-
-                # intervalIndex = argIndex
-                # while(intervalIndex < len(argC)):
-                #     if(args[intervalIndex][0] == "-"):
-                #         break
-
-                #     if(args[intervalIndex][0] == "h"):
-                #         print("increment hour")
-                #         totalResetTime += args[intervalIndex][1:]
-                #         intervalIndex += 1
-                #         continue
-
-                #     # etc
-
-                #     intervalIndex += 1
+                # argIndex += 2
 
                 # Pick up reset args if there are any
                 resetInterval = None
                 resetDateTime = None
+                totalResetTime = None
                 optionalArgIndex = 0
+                # Interval
                 if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
-                    resetInterval = sys.argv[argIndex + 2]
-                    optionalArgIndex += 1
-                    if(argC > argIndex + 3 and sys.argv[argIndex + 3][0] != "-"):
-                        resetDateTime = sys.argv[argIndex + 3]
-                        optionalArgIndex += 1
+                    # resetInterval = sys.argv[argIndex + 2]
+                    # optionalArgIndex += 1
+
+                    print("asd")
+                    print(str(sys.argv))
+                    print(argC)
                     
-                saveRes = Main.addTask(task, taskList, taskListPath, resetInterval, resetDateTime)
+                    useDefaultMultiplier = False
+                    totalResetTime = 0    
+                    intervalIndex = argIndex
+                    while(intervalIndex < argC):
+                        print("idx " + str(intervalIndex) + ": " + str(sys.argv[intervalIndex]) + ", 0 :" + str(sys.argv[intervalIndex][0]))
+
+                        if(sys.argv[intervalIndex][0] == "-" or sys.argv[intervalIndex][0] != "h"):
+                            print("break")
+                            break
+
+                        if(sys.argv[intervalIndex][0] == "h"):
+                            useDefaultMultiplier = True
+                            print("increment hour")
+                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60
+                            intervalIndex += 1
+                            continue
+                        
+                        # elif(sys.argv[intervalIndex][0] == "d" or sys.argv[intervalIndex][0:2] == "day"):
+                        #     print("increment day")
+                        #     totalResetTime += sys.argv[intervalIndex][1:] * 60 * 60 * 24
+                        #     intervalIndex += 1
+                        #     continue
+                        
+                        # elif(sys.argv[intervalIndex][0] == "w" or sys.argv[intervalIndex][0:3] == "week"):
+                        #     print("increment week")
+                        #     totalResetTime += sys.argv[intervalIndex][1:] * 60 * 60 * 24 * 7
+                        #     intervalIndex += 1
+                        #     continue
+                        
+                        # # 30 / 31?
+                        # elif(sys.argv[intervalIndex][0] == "m" or sys.argv[intervalIndex][0:4] == "month"):
+                        #     print("increment month")
+                        #     totalResetTime += sys.argv[intervalIndex][1:] * 60 * 60 * 24 * 7 * 30
+                        #     intervalIndex += 1
+                        #     continue
+
+                        else:
+                            print("Reset interval " + sys.argv[intervalIndex] + " not recognized.")
+
+                        print("interval " + str(sys.argv[intervalIndex]))
+                        intervalIndex += 1
+                        
+                    optionalArgIndex += intervalIndex
+
+                    print("args " + str(optionalArgIndex) + "/" + str(argC))
+
+
+
+
+                    # Date
+                    if(argC > optionalArgIndex + 1 and sys.argv[optionalArgIndex + 1][0] != "-"):
+                        print("date")
+                        resetDateTime = sys.argv[optionalArgIndex + 1]
+                        optionalArgIndex += 1
+
+                
+                    print("args " + str(optionalArgIndex) + "/" + str(argC) + " " + str(sys.argv[optionalArgIndex]) )
+                    
+
+
+
+
+
+                saveRes = Main.addTask(task, taskList, taskListPath, totalResetTime, resetDateTime)
                 print("Add task " + ("was successful." if saveRes else "failed."))
 
                 argIndex += 2 + optionalArgIndex
@@ -272,6 +313,7 @@ class Main:
         # 5. Documentation
 
         resetString = ""
+        incrementedRestString = ""
 
         # Deal with resetInterval and resetDateTime
         if(resetInterval != None):
@@ -280,7 +322,7 @@ class Main:
 
                 # About 3.8 months limit
                 if(sanitizedResetInterval > 9999999 or sanitizedResetInterval < 1):
-                    raise Exception
+                    raise Exception("Invalid interval argument")
             except Exception as e:
                 print("\naddTask reset arguments error:")
                 print(e)
