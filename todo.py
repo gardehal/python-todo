@@ -34,7 +34,7 @@ class Main:
         argIndex = 1
         while argIndex < argC:
             arg = sys.argv[argIndex].lower()
-            print("arg: " + str(sys.argv[argIndex]))
+            # print("arg: " + str(sys.argv[argIndex]))
 
             # List contents of curret task list
             if(arg in listTaskArgs):
@@ -61,8 +61,6 @@ class Main:
                     quit()
 
                 task = sys.argv[argIndex + 1]
-                # TODO incrementing agindex here rather than later seems to have unintended skipping of args
-                # argIndex += 2
 
                 # Pick up reset args if there are any
                 resetInterval = None
@@ -76,8 +74,6 @@ class Main:
                     totalResetTime = 0    
                     intervalIndex = argIndex + 2
                     while(intervalIndex < argC):
-                        print("idx " + str(intervalIndex) + ": " + str(sys.argv[intervalIndex]) + ", 0 :" + str(sys.argv[intervalIndex][0]))
-
                         # If next argument is a flag (-xyz) or not a recognized increment argument, break loop, use useDefaultMultiplier
                         # Notice the decrementation of intervalIndex so the date arguments are not skipped
                         if(sys.argv[intervalIndex][0] == "-" or sys.argv[intervalIndex][0] != "s" and sys.argv[intervalIndex][0] != "h"  
@@ -112,13 +108,12 @@ class Main:
                         # 30 / 31?
                         elif(sys.argv[intervalIndex][0] == "m"):
                             useDefaultMultiplier = False
-                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60 * 24 * 7 * 30
+                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60 * 24 * 30
                             intervalIndex += 1
                             continue
                         
                         else:
                             print("Interval argument not recognized " + sys.argv[intervalIndex] + ". Quitting.")
-                            intervalIndex -= 1
                             quit()
 
                         intervalIndex += 1
@@ -126,15 +121,18 @@ class Main:
                     # Interval arguments finished, increment optionalArgIndex so we don't have to reiterate over the same arguments
                     optionalArgIndex += intervalIndex
 
-                    # TODO try/except for int parse 
                     # Use useDefaultMultiplier which is hours of no letter is given in the interval argument
                     if(useDefaultMultiplier and argC > optionalArgIndex + 1 and sys.argv[optionalArgIndex + 1][0] != "-"):
-                        totalResetTime += int(sys.argv[optionalArgIndex + 1]) * 60 * 60
-                        optionalArgIndex += 1
+                        try:
+                            totalResetTime += int(sys.argv[optionalArgIndex + 1]) * 60 * 60
+                            optionalArgIndex += 1
+                        except Exception as e:
+                            print("Error getting reset interval time from argument " + sys.argv[optionalArgIndex + 1])
+                            print("Must be \"h\", \"d\", \"w\", \"m\", or \"none\".")
+                            quit()
 
                     # Date
                     if(argC > optionalArgIndex + 1 and sys.argv[optionalArgIndex + 1][0] != "-"):
-                        print("date")
                         resetDateTime = sys.argv[optionalArgIndex + 1]
                         optionalArgIndex += 1
 
@@ -305,8 +303,8 @@ class Main:
 
         # TODO reset
         # 1. Finish add
-        # - 2. Program input arguments (resetInterval, month, week, day, hour options)
-        # 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
+        # 2. Program input arguments (resetInterval, month, week, day, hour options)
+        # - 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
         # 4. Tests
         # 5. Documentation
 
