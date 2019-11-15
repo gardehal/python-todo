@@ -60,8 +60,8 @@ class Main:
                     print("Too few arguments to save task, need at least 1: task (string), resetInterval (enum)(optional)")
                     quit()
 
-                # Account for addArgs argument and task string
                 task = sys.argv[argIndex + 1]
+                # TODO incrementing agindex here rather than later seems to have unintended skipping of args
                 # argIndex += 2
 
                 # Pick up reset args if there are any
@@ -69,63 +69,68 @@ class Main:
                 resetDateTime = None
                 totalResetTime = None
                 optionalArgIndex = 0
+
                 # Interval
                 if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
-                    # resetInterval = sys.argv[argIndex + 2]
-                    # optionalArgIndex += 1
-
-                    print("asd")
-                    print(str(sys.argv))
-                    print(argC)
-                    
-                    useDefaultMultiplier = False
+                    useDefaultMultiplier = True
                     totalResetTime = 0    
-                    intervalIndex = argIndex
+                    intervalIndex = argIndex + 2
                     while(intervalIndex < argC):
                         print("idx " + str(intervalIndex) + ": " + str(sys.argv[intervalIndex]) + ", 0 :" + str(sys.argv[intervalIndex][0]))
 
-                        if(sys.argv[intervalIndex][0] == "-" or sys.argv[intervalIndex][0] != "h"):
-                            print("break")
+                        # If next argument is a flag (-xyz) or not a recognized increment argument, break loop, use useDefaultMultiplier
+                        # Notice the decrementation of intervalIndex so the date arguments are not skipped
+                        if(sys.argv[intervalIndex][0] == "-" or sys.argv[intervalIndex][0] != "s" and sys.argv[intervalIndex][0] != "h"  
+                        and sys.argv[intervalIndex][0] != "d"  and sys.argv[intervalIndex][0] != "w"  and sys.argv[intervalIndex][0] != "m"):
+                            intervalIndex -= 1
                             break
 
+                        if(sys.argv[intervalIndex][0] == "s"):
+                            useDefaultMultiplier = False
+                            totalResetTime += int(sys.argv[intervalIndex][1:])
+                            intervalIndex += 1
+                            continue
+
                         if(sys.argv[intervalIndex][0] == "h"):
-                            useDefaultMultiplier = True
-                            print("increment hour")
+                            useDefaultMultiplier = False
                             totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60
                             intervalIndex += 1
                             continue
                         
-                        # elif(sys.argv[intervalIndex][0] == "d" or sys.argv[intervalIndex][0:2] == "day"):
-                        #     print("increment day")
-                        #     totalResetTime += sys.argv[intervalIndex][1:] * 60 * 60 * 24
-                        #     intervalIndex += 1
-                        #     continue
+                        elif(sys.argv[intervalIndex][0] == "d"):
+                            useDefaultMultiplier = False
+                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60 * 24
+                            intervalIndex += 1
+                            continue
                         
-                        # elif(sys.argv[intervalIndex][0] == "w" or sys.argv[intervalIndex][0:3] == "week"):
-                        #     print("increment week")
-                        #     totalResetTime += sys.argv[intervalIndex][1:] * 60 * 60 * 24 * 7
-                        #     intervalIndex += 1
-                        #     continue
+                        elif(sys.argv[intervalIndex][0] == "w"):
+                            useDefaultMultiplier = False
+                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60 * 24 * 7
+                            intervalIndex += 1
+                            continue
                         
-                        # # 30 / 31?
-                        # elif(sys.argv[intervalIndex][0] == "m" or sys.argv[intervalIndex][0:4] == "month"):
-                        #     print("increment month")
-                        #     totalResetTime += sys.argv[intervalIndex][1:] * 60 * 60 * 24 * 7 * 30
-                        #     intervalIndex += 1
-                        #     continue
-
+                        # 30 / 31?
+                        elif(sys.argv[intervalIndex][0] == "m"):
+                            useDefaultMultiplier = False
+                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60 * 24 * 7 * 30
+                            intervalIndex += 1
+                            continue
+                        
                         else:
-                            print("Reset interval " + sys.argv[intervalIndex] + " not recognized.")
+                            print("Interval argument not recognized " + sys.argv[intervalIndex] + ". Quitting.")
+                            intervalIndex -= 1
+                            quit()
 
-                        print("interval " + str(sys.argv[intervalIndex]))
                         intervalIndex += 1
                         
+                    # Interval arguments finished, increment optionalArgIndex so we don't have to reiterate over the same arguments
                     optionalArgIndex += intervalIndex
 
-                    print("args " + str(optionalArgIndex) + "/" + str(argC))
-
-
-
+                    # TODO try/except for int parse 
+                    # Use useDefaultMultiplier which is hours of no letter is given in the interval argument
+                    if(useDefaultMultiplier and argC > optionalArgIndex + 1 and sys.argv[optionalArgIndex + 1][0] != "-"):
+                        totalResetTime += int(sys.argv[optionalArgIndex + 1]) * 60 * 60
+                        optionalArgIndex += 1
 
                     # Date
                     if(argC > optionalArgIndex + 1 and sys.argv[optionalArgIndex + 1][0] != "-"):
@@ -133,18 +138,11 @@ class Main:
                         resetDateTime = sys.argv[optionalArgIndex + 1]
                         optionalArgIndex += 1
 
-                
-                    print("args " + str(optionalArgIndex) + "/" + str(argC) + " " + str(sys.argv[optionalArgIndex]) )
-                    
-
-
-
-
-
+                # All optional arguments and the recognized permutations have been dealt with, finally run the method
                 saveRes = Main.addTask(task, taskList, taskListPath, totalResetTime, resetDateTime)
                 print("Add task " + ("was successful." if saveRes else "failed."))
 
-                argIndex += 2 + optionalArgIndex
+                argIndex += optionalArgIndex
                 continue
 
             # Delete a task
