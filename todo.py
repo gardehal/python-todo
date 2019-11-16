@@ -17,6 +17,14 @@ setListArgs = ["-setlist", "-sl"]
 helpArgs = ["-help", "-h"]
 testArgs = ["-test"]
 
+
+        # TODO reset
+        # 1. Finish add
+        # 2. Program input arguments (resetInterval, month, week, day, hour options)
+        # - 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
+        # 4. Tests
+        # 5. Documentation
+
 class Main:
     def main():
         # Defaults
@@ -301,13 +309,6 @@ class Main:
         if(task.rstrip() == ""):
             return False
 
-        # TODO reset
-        # 1. Finish add
-        # 2. Program input arguments (resetInterval, month, week, day, hour options)
-        # - 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
-        # 4. Tests
-        # 5. Documentation
-
         resetString = ""
         incrementedRestString = ""
 
@@ -386,7 +387,7 @@ class Main:
             # !interval%datetime
             resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T")
 
-            incrementedRestString = str(Main.incrementResetDateTime(resetString)) + " "
+            incrementedRestString = str(Main.incrementResetDateTime(resetString)[0]) + " "
             if(incrementedRestString.strip() == None):
                 return False
 
@@ -596,14 +597,14 @@ class Main:
             # Prints should be added to return array at the end of method, or sent separatly, though other array (array of metadata array and content array, aka wrap) or on separate method
             # Legend for task list
             print("From task list: " + taskList)
-            print("#" + "\t" + "Completed?" + "\t" + "Task name" + "\t" + "Next reset")
+            print("#" + "\t" + "Completed?" + "\t" + "Task")
+
+        printArray = []
 
         tasks = Main.loadFile(taskList, taskListPath)
         if(len(tasks) == 0):
             print("The task list " + taskList + " is empty.")
-            return []
-        
-        printArray = []
+            return printArray
 
         nTasks = len(tasks)
         index = 0
@@ -611,9 +612,9 @@ class Main:
             task = tasks[index].rstrip()
             
             taskReset = ""
-            # TODO
-            # if(task[1][0] == "Z"):
-            #     taskReset = task[1]
+            # if(task[2][0] == "!"):
+            #     print("this task contains a reset string")
+                # taskReset =  "\t" + task[1]
 
             try:
                 taskCompleted = "Yes" if int(task[0]) == 1 else "No"
@@ -622,7 +623,7 @@ class Main:
                 if(len(taskText) < 1):
                     raise Exception
                 
-                printArray.append(str(index + 1) + "\t" + str(taskCompleted) + "\t\t" + str(taskText) + "\t" + str(taskReset))
+                printArray.append(str(index + 1) + "\t" + str(taskCompleted) + str(taskReset) + "\t\t" + str(taskText))
             except:
                 # Malformed line, attempt to fix it, if it's empty, remove it.
                 taskLine = str(task).rstrip()
@@ -676,7 +677,10 @@ class Main:
         string resetString
         """
 
-        incrementedDateTime = None
+        if(len(resetString) < 17 or "!" not in resetString or "Z" not in resetString or "T" not in resetString):
+            return None
+
+        resArray = []
 
         try:
             # !resetIntervalZdateTtime
@@ -712,16 +716,18 @@ class Main:
 
             # Assemble the resetString format !resetIntervalZdateTtime
             joinedNewDateTime = str(newDateTime).replace(" ", "T")
-            incrementedDateTime = "!" + str(increment) + "Z" + joinedNewDateTime
+            resArray.append("!" + str(increment) + "Z" + joinedNewDateTime)
+            resArray.append(str(increment))
+            resArray.append(str(newDateTime))
 
-            return incrementedDateTime
+            return resArray
 
         except Exception as e:
             print("\nincrementResetDateTime error:")
             print(e)
-            return incrementedDateTime
+            return None
 
-        return incrementedDateTime
+        return resArray
 
     {
         # listTaskArgs = ["-tasks", "-t"]

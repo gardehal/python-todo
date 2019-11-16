@@ -1,6 +1,7 @@
 import sys
 import os
 import shutil
+import datetime
 
 import todo
 
@@ -18,7 +19,7 @@ class Tests:
         """
 
         # For checking individual tests
-        # testIndividualRes = Tests.testSetListIllegalCharacters()
+        # testIndividualRes = Tests.testIncrementResetDateTimeIncrementValue()
         # Tests.after(useBeforeAfter)
         
         # Tests.printTestResult(testIndividualRes, "testIndividual")
@@ -104,11 +105,23 @@ class Tests:
         Tests.after(useBeforeAfter)
         testFormatPrintListNormalFormatRes = Tests.testFormatPrintListNormalFormat()
         Tests.after(useBeforeAfter)
-        formatTaskListsPrintNoDirectoryRes = Tests.formatTaskListsPrintNoDirectory()
+        testFormatTaskListsPrintNoDirectoryRes = Tests.testFormatTaskListsPrintNoDirectory()
         Tests.after(useBeforeAfter)
-        formatTaskListsPrintEmptyDirectoryRes = Tests.formatTaskListsPrintEmptyDirectory()
+        testFormatTaskListsPrintEmptyDirectoryRes = Tests.testFormatTaskListsPrintEmptyDirectory()
         Tests.after(useBeforeAfter)
-        formatTaskListsPrintTwoListsRes = Tests.formatTaskListsPrintTwoLists()
+        testFormatTaskListsPrintTwoListsRes = Tests.testFormatTaskListsPrintTwoLists()
+        Tests.after(useBeforeAfter)
+        testIncrementResetDateTimeNoStringRes = Tests.testIncrementResetDateTimeNoString()
+        Tests.after(useBeforeAfter)
+        testIncrementResetDateTimeMalformedStringRes = Tests.testIncrementResetDateTimeMalformedString()
+        Tests.after(useBeforeAfter)
+        testIncrementResetDateTimeIncrementNonIntRes = Tests.testIncrementResetDateTimeIncrementNonInt()
+        Tests.after(useBeforeAfter)
+        testIncrementResetDateTimeDateNonIntRes = Tests.testIncrementResetDateTimeDateNonInt()
+        Tests.after(useBeforeAfter)
+        testIncrementResetDateTimeTimeNonIntRes = Tests.testIncrementResetDateTimeTimeNonInt()
+        Tests.after(useBeforeAfter)
+        testIncrementResetDateTimeIncrementValueRes = Tests.testIncrementResetDateTimeIncrementValue()
         Tests.after(useBeforeAfter)
         
         getFullFilePathRes = testGetFullFilePathDirectoryRes + testGetFullFilePathDirectoryAndFileRes
@@ -121,9 +134,12 @@ class Tests:
         editFileRes3 = testEditTaskInsertLastTaskRes + testEditTaskInsertTaskRes + testEditTaskIllegalTaskNumberRes + testEditTaskNoActionNumberRes
         formatPrintListRes1 = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedZeroOneInsertPositionRes
         formatPrintListRes2 = testFormatPrintListMalformedTaskTextRes + testFormatPrintListNormalFormatRes
-        formatTaskListsPrintRes = formatTaskListsPrintNoDirectoryRes + formatTaskListsPrintEmptyDirectoryRes + formatTaskListsPrintTwoListsRes
+        formatTaskListsPrintRes = testFormatTaskListsPrintNoDirectoryRes + testFormatTaskListsPrintEmptyDirectoryRes + testFormatTaskListsPrintTwoListsRes
+        incrementResetDateTimeRes1 = testIncrementResetDateTimeNoStringRes + testIncrementResetDateTimeMalformedStringRes + testIncrementResetDateTimeIncrementNonIntRes
+        incrementResetDateTimeRes2 = testIncrementResetDateTimeDateNonIntRes + testIncrementResetDateTimeTimeNonIntRes + testIncrementResetDateTimeIncrementValueRes
 
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 
+        + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes + incrementResetDateTimeRes1 + incrementResetDateTimeRes2
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -167,9 +183,15 @@ class Tests:
         Tests.printTestResult(testFormatPrintListMalformedZeroOneInsertPositionRes, "testFormatPrintListMalformedZeroOneInsertPosition")
         Tests.printTestResult(testFormatPrintListMalformedTaskTextRes, "testFormatPrintListMalformedTaskText")
         Tests.printTestResult(testFormatPrintListNormalFormatRes, "testFormatPrintListNormalFormat")
-        Tests.printTestResult(formatTaskListsPrintNoDirectoryRes, "formatTaskListsPrintNoDirectory")
-        Tests.printTestResult(formatTaskListsPrintEmptyDirectoryRes, "formatTaskListsPrintEmptyDirectory")
-        Tests.printTestResult(formatTaskListsPrintTwoListsRes, "formatTaskListsPrintTwoLists")
+        Tests.printTestResult(testFormatTaskListsPrintNoDirectoryRes, "testFormatTaskListsPrintNoDirectory")
+        Tests.printTestResult(testFormatTaskListsPrintEmptyDirectoryRes, "testFormatTaskListsPrintEmptyDirectory")
+        Tests.printTestResult(testFormatTaskListsPrintTwoListsRes, "testFormatTaskListsPrintTwoLists")
+        Tests.printTestResult(testIncrementResetDateTimeNoStringRes, "testIncrementResetDateTimeNoString")
+        Tests.printTestResult(testIncrementResetDateTimeMalformedStringRes, "testIncrementResetDateTimeMalformedString")
+        Tests.printTestResult(testIncrementResetDateTimeIncrementNonIntRes, "testIncrementResetDateTimeIncrementNonInt")
+        Tests.printTestResult(testIncrementResetDateTimeDateNonIntRes, "testIncrementResetDateTimeDateNonInt")
+        Tests.printTestResult(testIncrementResetDateTimeTimeNonIntRes, "testIncrementResetDateTimeTimeNonInt")
+        Tests.printTestResult(testIncrementResetDateTimeIncrementValueRes, "testIncrementResetDateTimeIncrementValue")
 
         print("\n" + ("All tests passed." if finalRes == 0 else (str(finalRes) + " test(s) failed.")))
         if(useBeforeAfter == 0):
@@ -1192,8 +1214,8 @@ class Tests:
 
         # Format is:
         # [index] ["Yes"/"No"] [task]
-        firstTaskFormat = "1\tNo\t\t" + firstTaskText + "\t"
-        secondTaskFormat = "2\tYes\t\t" + secondTaskText + "\t"
+        firstTaskFormat = "1\tNo\t\t" + firstTaskText
+        secondTaskFormat = "2\tYes\t\t" + secondTaskText
 
         formatCheck = len(formatRes) == 2 and formatRes[0] == firstTaskFormat and formatRes[1] == secondTaskFormat
         
@@ -1207,7 +1229,7 @@ class Tests:
 
         return 1
                 
-    def formatTaskListsPrintNoDirectory():
+    def testFormatTaskListsPrintNoDirectory():
         """
         Test formatTaskListsPrint() with no directory, should return an empty array.
         """
@@ -1221,7 +1243,7 @@ class Tests:
 
         return 1
 
-    def formatTaskListsPrintEmptyDirectory():
+    def testFormatTaskListsPrintEmptyDirectory():
         """
         Test formatTaskListsPrint() with an empty directory, should return an empty array.
         """
@@ -1238,13 +1260,13 @@ class Tests:
 
         return 1
 
-    def formatTaskListsPrintTwoLists():
+    def testFormatTaskListsPrintTwoLists():
         """
         Test formatTaskListsPrint() with a directory with two lists (files), should return the filenames without the ".txt".
         """
 
-        firstTaskFirstList = "Run formatTaskListsPrintTwoLists first task first list"
-        firstTaskSecondList = "Run formatTaskListsPrintTwoLists first task second list"
+        firstTaskFirstList = "Run testFormatTaskListsPrintTwoLists first task first list"
+        firstTaskSecondList = "Run testFormatTaskListsPrintTwoLists first task second list"
 
         firstListName = "test-first-task-list"
         secondListName = "test-second-task-list"
@@ -1258,6 +1280,124 @@ class Tests:
         formatRes = todo.Main.formatTaskListsPrint(testDirectoryName)
 
         if(len(formatRes) == 2 and formatRes[0] == firstListName and formatRes[1] == secondListName):
+            return 0
+
+        return 1
+
+    def testIncrementResetDateTimeNoString():
+        """
+        Test incrementResetDateTime() with empty string. Should return None.
+        """
+
+        resetString = ""
+
+        incrementRes = todo.Main.incrementResetDateTime(resetString)
+
+        if(incrementRes == None):
+            return 0
+
+        return 1
+
+    def testIncrementResetDateTimeMalformedString():
+        """
+        Test incrementResetDateTime() with a string that does not have exclemation mar, Z, or T. Should return None.
+        """
+
+        # !123Z2001-02-03T04:05:06
+        resetStringNoExclemation = "123Z2001-02-03T04:05:06"
+        resetStringNoZ = "!1232001-02-03T04:05:06"
+        resetStringNoT = "!123Z2001-02-0304:05:06"
+
+        incrementResNoExclemation = todo.Main.incrementResetDateTime(resetStringNoExclemation)
+        incrementResNoZ = todo.Main.incrementResetDateTime(resetStringNoZ)
+        incrementResNoT = todo.Main.incrementResetDateTime(resetStringNoT)
+
+        if(incrementResNoExclemation == None and incrementResNoZ == None and incrementResNoT == None):
+            return 0
+
+        return 1
+
+    def testIncrementResetDateTimeIncrementNonInt():
+        """
+        Test incrementResetDateTime() with a string that has a non-int increment value. Should return None.
+        """
+
+        resetString = "!xZ2001-02-03T04:05:06"
+
+        incrementRes = todo.Main.incrementResetDateTime(resetString)
+
+        if(incrementRes == None):
+            return 0
+
+        return 1
+
+    def testIncrementResetDateTimeDateNonInt():
+        """
+        Test incrementResetDateTime() with a string that has a non-int date values. Should return None.
+        """
+
+        resetStringNonIntYear = "!123Za-02-03T04:05:06"
+        resetStringNonIntMonth = "!123Z2001-b-03T04:05:06"
+        resetStringNonIntDay = "!123Z2001-02-cT04:05:06"
+
+        incrementResNonIntYear = todo.Main.incrementResetDateTime(resetStringNonIntYear)
+        incrementResNonIntMonth = todo.Main.incrementResetDateTime(resetStringNonIntMonth)
+        incrementResNonIntDay = todo.Main.incrementResetDateTime(resetStringNonIntDay)
+
+        if(incrementResNonIntYear == None and incrementResNonIntMonth == None and incrementResNonIntDay == None):
+            return 0
+
+        return 1
+
+    def testIncrementResetDateTimeTimeNonInt():
+        """
+        Test incrementResetDateTime() with a string that has a non-int time values. Should return None.
+        """
+
+        resetStringNonIntHour = "!123Z2001-02-03Ta:05:06"
+        resetStringNonIntMinute = "!123Z2001-02-03T04:b:06"
+        resetStringNonIntSecond = "!123Z2001-02-03T04:05:c"
+
+        incrementResNonIntHour = todo.Main.incrementResetDateTime(resetStringNonIntHour)
+        incrementResNonIntMinute = todo.Main.incrementResetDateTime(resetStringNonIntMinute)
+        incrementResNonIntSecond = todo.Main.incrementResetDateTime(resetStringNonIntSecond)
+
+        if(incrementResNonIntHour == None and incrementResNonIntMinute == None and incrementResNonIntSecond == None):
+            return 0
+
+        return 1
+
+    def testIncrementResetDateTimeIncrementValue():
+        """
+        Test incrementResetDateTime() with a normal reset string. Should return an array of incremented reset string, the increment value, and datetime of the new datetime reset value.
+        """
+
+        # !123Z2001-02-03T04:05:06
+        year = "2001"
+        month = "02"
+        day = "03"
+        resetDate = year + "-" + month + "-" + day
+
+        hours = "10"
+        minutes = "00"
+        seconds = "00"
+        resetTime = hours + ":" + minutes + ":" + seconds
+
+        resetInterval = 60 * 60 * 2  # 2 hours
+        resetString = "!" + str(resetInterval) + "Z" + resetDate + "T" + resetTime
+
+        hoursExpected = "12"
+        resetTimeExpected = hoursExpected + ":" + minutes + ":" + seconds
+        expectedResetStringRes = "!" + str(resetInterval) + "Z" + resetDate + "T" + resetTimeExpected
+
+        incrementRes = todo.Main.incrementResetDateTime(resetString)
+
+        if(len(incrementRes) != 3):
+            return 1
+
+        dateTimeExpected = datetime.datetime(int(year), int(month), int(day), int(hoursExpected), int(minutes), int(seconds))
+
+        if(incrementRes[0] == expectedResetStringRes and incrementRes[1] == str(resetInterval) and incrementRes[2] == str(dateTimeExpected)):
             return 0
 
         return 1
