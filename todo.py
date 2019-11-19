@@ -143,6 +143,9 @@ class Main:
                     if(argC > optionalArgIndex + 1 and sys.argv[optionalArgIndex + 1][0] != "-"):
                         resetDateTime = sys.argv[optionalArgIndex + 1]
                         optionalArgIndex += 1
+                        
+                else:
+                    optionalArgIndex += 2
 
                 # All optional arguments and the recognized permutations have been dealt with, finally run the method
                 saveRes = Main.addTask(task, taskList, taskListPath, totalResetTime, resetDateTime)
