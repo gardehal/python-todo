@@ -593,7 +593,8 @@ class Main:
         """
         A method for formatting the task in a task list in a legible manner. \n
         string taskList \n
-        string taskListPath
+        string taskListPath \n
+        bool retry (optional)
         """
 
         if(not retry):
@@ -612,24 +613,41 @@ class Main:
         nTasks = len(tasks)
         index = 0
         while index < nTasks:
-            task = tasks[index].rstrip()
+            taskArray = tasks[index].rstrip().split()
             
-            taskReset = ""
-            # if(task[2][0] == "!"):
-            #     print("this task contains a reset string")
-                # taskReset =  "\t" + task[1]
-
             try:
-                taskCompleted = "Yes" if int(task[0]) == 1 else "No"
-                taskText = str(task[2:]).rstrip()
+                taskArrayIndex = 0
 
-                if(len(taskText) < 1):
+                completedNumber = int(taskArray[taskArrayIndex])
+                if(completedNumber != 0 and completedNumber != 1 or len(taskArray) < 2):
                     raise Exception
+
+                taskCompleted = "Yes" if completedNumber == 1 else "No"
+                taskArrayIndex += 1
+
+                taskReset = ""
+                if(taskArray[taskArrayIndex][0] == "!"):
+                    now = datetime.datetime.now()
+
+                    # Compare datetimes
+                    # increment if date form file is now or in the past
+
+                    print("this task contains a reset string")
+                    taskReset =  "\t" + taskArray[taskArrayIndex]
+                    taskArrayIndex += 1
+
+                taskText = ""
+                while taskArrayIndex < len(taskArray):
+                    taskText += str(taskArray[taskArrayIndex]) + " "
+                    taskArrayIndex += 1
                 
                 printArray.append(str(index + 1) + "\t" + str(taskCompleted) + str(taskReset) + "\t\t" + str(taskText))
-            except:
+            except Exception as e:
+                # print("\nformatPrintList error: ")
+                # print(e)
+
                 # Malformed line, attempt to fix it, if it's empty, remove it.
-                taskLine = str(task).rstrip()
+                taskLine = str(tasks[index].rstrip())
                 
                 # taskLine is empty string ("") or only contains a complete number ("0"/"1"), delete line
                 if(len(taskLine) < 1 or len(taskLine[1:]) < 1):
@@ -643,7 +661,7 @@ class Main:
 
                 # Unknown error, implore the user fix and quit
                 else:
-                    printArray.append("This task, number " + str(index + 1) + " was malformed. Please delete and add it again before trying agian. The text is: \"" + task + "\"")
+                    printArray.append("This task, number " + str(index + 1) + " was malformed. Please delete and add it again before trying agian. The text is: \"" + taskLine + "\"")
                     quit()
                     
                 # Though recursion, run method again, this should load the fixed file into memory and recursivly fix the 
