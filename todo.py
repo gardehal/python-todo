@@ -321,7 +321,7 @@ class Main:
                 sanitizedResetInterval = int(resetInterval)
 
                 # About 3.8 months limit
-                if(sanitizedResetInterval > 9999999 or sanitizedResetInterval < 1):
+                if(sanitizedResetInterval > 9_999_999 or sanitizedResetInterval < 1):
                     raise Exception("Invalid interval argument")
             except Exception as e:
                 print("\naddTask reset arguments error:")
@@ -356,21 +356,30 @@ class Main:
                     # Note: The inverted structure of year, month, day is so we can use year and month to get maxDate.
                     # Get year from input, if none use current
                     if(len(dateArray) > 2 and dateArray[2]):
-                        year = dateArray[2]
+                        if(dateArray[2] >= now.year and dateArray[2] < (now.year + 5)):
+                            year = dateArray[2]
+                        else: 
+                            return False
                     else:
                         year = now.year
 
                     # Get month from input, if none use current
-                    if(len(dateArray) > 1 and dateArray[1] and dateArray[1] > 0 and dateArray[1] < 13):
-                        month = dateArray[1]
+                    if(len(dateArray) > 1 and dateArray[1]):
+                        if(dateArray[1] > 0 and dateArray[1] < 13):
+                            month = dateArray[1]
+                        else: 
+                            return False
                     else:
                         month = now.month
                         
                     # Get day from input, if none use current
                     # Thanks to https://stackoverflow.com/questions/42950/get-last-day-of-the-month for the line
                     maxDate = calendar.monthrange(year, month)[1]
-                    if(len(dateArray) > 0 and dateArray[0] and dateArray[0] > 0 and dateArray[0] < (maxDate + 1)):
-                        day = dateArray[0]
+                    if(len(dateArray) > 0 and dateArray[0]):
+                        if(dateArray[0] > 0 and dateArray[0] < (maxDate + 1)):
+                            day = dateArray[0]
+                        else: 
+                            return False
                     else:
                         day = now.day
 
