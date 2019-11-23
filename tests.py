@@ -19,7 +19,7 @@ class Tests:
         """
 
         # For checking individual tests
-        # testIndividualRes = Tests.testIncrementResetDateTimeIncrementValue()
+        # testIndividualRes = Tests.testAddTaskResetOutOfBoundsValues()
         # Tests.after(useBeforeAfter)
         
         # Tests.printTestResult(testIndividualRes, "testIndividual")
@@ -50,6 +50,14 @@ class Tests:
         testAddTaskNoTaskRes = Tests.testAddTaskNoTask() 
         Tests.after(useBeforeAfter)
         testAddTaskNewTaskSameTaskListRes = Tests.testAddTaskNewTaskSameTaskList()
+        Tests.after(useBeforeAfter)
+        testAddTaskResetMalformedDateTimeRes = Tests.testAddTaskResetMalformedDateTime()
+        Tests.after(useBeforeAfter)
+        testAddTaskResetOutOfBoundsValuesRes = Tests.testAddTaskResetOutOfBoundsValues()
+        Tests.after(useBeforeAfter)
+        testAddTaskResetIntervalRes = Tests.testAddTaskResetInterval()
+        Tests.after(useBeforeAfter)
+        testAddTaskResetDateTimeRes = Tests.testAddTaskResetDateTime()
         Tests.after(useBeforeAfter)
         testloadFileNoListRes = Tests.testloadFileNoList()
         Tests.after(useBeforeAfter)
@@ -126,7 +134,8 @@ class Tests:
         
         getFullFilePathRes = testGetFullFilePathDirectoryRes + testGetFullFilePathDirectoryAndFileRes
         getCurrentTaskListRes = testGetCurrentTaskListNoFileRes + testGetCurrentTaskListFileExistsRes
-        addTaskRes = testAddTaskEmptyListRes + testAddTaskFaultyFileRes + testAddTaskNoFileRes + testAddTaskNoTaskRes + testAddTaskNewTaskSameTaskListRes 
+        addTaskRes1 = testAddTaskEmptyListRes + testAddTaskFaultyFileRes + testAddTaskNoFileRes + testAddTaskNoTaskRes + testAddTaskNewTaskSameTaskListRes 
+        addTaskRes2 = testAddTaskResetMalformedDateTimeRes + testAddTaskResetOutOfBoundsValuesRes + testAddTaskResetIntervalRes + testAddTaskResetDateTimeRes
         loadFileRes = testloadFileNoListRes + testloadFileEmptyListRes + testloadFileOneTaskRes
         setListRes = testSetListNoFileRes + testSetListToSameListRes + testSetListIllegalCharactersRes + testSetListNormalListRes
         editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskIllegalPermissionRes
@@ -138,7 +147,7 @@ class Tests:
         incrementResetDateTimeRes1 = testIncrementResetDateTimeNoStringRes + testIncrementResetDateTimeMalformedStringRes + testIncrementResetDateTimeIncrementNonIntRes
         incrementResetDateTimeRes2 = testIncrementResetDateTimeDateNonIntRes + testIncrementResetDateTimeTimeNonIntRes + testIncrementResetDateTimeIncrementValueRes
 
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes1 + addTaskRes2 + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 
         + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes + incrementResetDateTimeRes1 + incrementResetDateTimeRes2
 
         if(useBeforeAfter != 0):
@@ -156,6 +165,10 @@ class Tests:
         Tests.printTestResult(testAddTaskNoFileRes, "testAddTaskNoFile")
         Tests.printTestResult(testAddTaskNoTaskRes, "testAddTaskNoTask")
         Tests.printTestResult(testAddTaskNewTaskSameTaskListRes, "testAddTaskNewTaskSameTaskList")
+        Tests.printTestResult(testAddTaskResetMalformedDateTimeRes, "testAddTaskResetMalformedDateTime")
+        Tests.printTestResult(testAddTaskResetOutOfBoundsValuesRes, "testAddTaskResetOutOfBoundsValues")
+        Tests.printTestResult(testAddTaskResetIntervalRes, "testAddTaskResetInterval")
+        Tests.printTestResult(testAddTaskResetDateTimeRes, "testAddTaskResetDateTime")
         Tests.printTestResult(testloadFileNoListRes, "testloadFileNoList")
         Tests.printTestResult(testloadFileEmptyListRes, "testloadFileEmptyList")
         Tests.printTestResult(testloadFileOneTaskRes, "testloadFileOneTask")
@@ -462,6 +475,177 @@ class Tests:
         task2Check = len(fileRes) == 2 and fileRes[1] == "0 " + task2
 
         if(task1Check and task2Check):
+            return 0
+        
+        return 1
+
+    def testAddTaskResetMalformedDateTime():
+        """
+        Test addTask() with a new task, reset interval, but the datetime string is not formatted correctly from the user ("[hour]:[day]-[month]-[year]").
+        Should return false and not add task to file.
+        """
+
+        now = datetime.datetime.now()
+
+        task = "Run testAddTaskResetDateTime"
+        resetInterval = 5 * 60 * 60 # 5 hours
+        resetHour = "01"
+        resetDay = "02"
+        resetMonth = "03"
+        resetYear = str(now.year + 1)
+        resetDatetime = resetHour + "a" + resetDay + "b" + resetMonth + "c" + resetYear
+        taskRes = todo.Main.addTask(task, testTaskList, testDirectoryName, resetInterval, resetDatetime)
+
+        if(taskRes):
+            return 1
+        
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 0):
+            return 0
+        
+        return 1
+
+    def testAddTaskResetOutOfBoundsValues():
+        """
+        Test addTask() with a new task, but the reset arguments are out of bounds. Should return false and not add anything to the file.
+        """
+
+        now = datetime.datetime.now()
+
+        # Acceptable variables
+        task = "Run testAddTaskResetOutOfBoundsValues"
+        resetIntervalNormal = 1 * 60 * 60 # 1 hour
+        resetDatetimeNone = None
+        resetDatetimeHourNormal = "01"
+        resetDatetimeDayNormal = "02"
+        resetDatetimeMonthNormal = "03"
+        resetDatetimeYearNormal = str(now.year + 1)
+
+        # Interval varaiables
+        resetIntervalHigh = 60 * 60 * 7 * 30 * 12 # 12 months
+        resetIntervalLow = -1
+
+        # Datetime variables
+        resetDatetimeHourHigh = "42"
+        resetDatetimeHourLow = "-2"
+        resetDatetimeDayHigh = "99"
+        resetDatetimeDayLow = "-3"
+        resetDatetimeMonthHigh = "123"
+        resetDatetimeMonthLow = "-4"
+        resetDatetimeYearHigh = str(now.year + 321)
+        resetDatetimeYearLow = str(now.year - 10)
+
+        # Assemble datetime arguments
+        resetArgumentHourHigh = resetDatetimeHourHigh + ":" + resetDatetimeDayNormal + "-" + resetDatetimeMonthNormal + "-" + resetDatetimeYearNormal
+        resetArgumentHourLow = resetDatetimeHourLow + ":" + resetDatetimeDayNormal + "-" + resetDatetimeMonthNormal + "-" + resetDatetimeYearNormal
+        resetArgumentDayHigh = resetDatetimeHourNormal + ":" + resetDatetimeDayHigh + "-" + resetDatetimeMonthNormal + "-" + resetDatetimeYearNormal
+        resetArgumentDayLow = resetDatetimeHourNormal + ":" + resetDatetimeDayLow + "-" + resetDatetimeMonthNormal + "-" + resetDatetimeYearNormal
+        resetArgumentMonthHigh = resetDatetimeHourNormal + ":" + resetDatetimeDayNormal + "-" + resetDatetimeMonthHigh + "-" + resetDatetimeYearNormal
+        resetArgumentMonthLow = resetDatetimeHourNormal + ":" + resetDatetimeDayNormal + "-" + resetDatetimeMonthLow + "-" + resetDatetimeYearNormal
+        resetArgumentYearHigh = resetDatetimeHourNormal + ":" + resetDatetimeDayNormal + "-" + resetDatetimeMonthNormal + "-" + resetDatetimeYearHigh
+        resetArgumentYearLow = resetDatetimeHourNormal + ":" + resetDatetimeDayNormal + "-" + resetDatetimeMonthNormal + "-" + resetDatetimeYearLow
+
+        print("testAddTaskResetOutOfBoundsValues datestime arguments")
+        print(resetArgumentHourHigh)
+        print(resetArgumentHourLow)
+        print(resetArgumentDayHigh)
+        print(resetArgumentDayLow)
+        print(resetArgumentMonthHigh)
+        print(resetArgumentMonthLow)
+        print(resetArgumentYearHigh)
+        print(resetArgumentYearLow)
+
+        # Run method with arguments
+        taskResIntervalHigh = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalHigh, resetDatetimeNone)
+        taskResIntervalLow = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalLow, resetDatetimeNone)
+
+        taskResDatetimeHourHigh = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalNormal, resetArgumentHourHigh)
+        taskResDatetimeHourLow = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalNormal, resetArgumentHourLow)
+        taskResDatetimeDayHigh = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalNormal, resetArgumentDayHigh)
+        taskResDatetimeDayLow = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalNormal, resetArgumentDayLow)
+        taskResDatetimeMonthHigh = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalNormal, resetArgumentMonthHigh)
+        taskResDatetimeMonthLow = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalNormal, resetArgumentMonthLow)
+        taskResDatetimeYearHigh = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalNormal, resetArgumentYearHigh)
+        taskResDatetimeYearLow = todo.Main.addTask(task, testTaskList, testDirectoryName, resetIntervalNormal, resetArgumentYearLow)
+
+        # TODO: not dealt with / needs fixes in addTask()
+        # interval, high
+        # day, high
+        # month, high
+        # year, high/low
+
+        if(taskResIntervalHigh or taskResIntervalLow or taskResDatetimeHourHigh or taskResDatetimeHourLow or taskResDatetimeDayHigh or taskResDatetimeDayLow
+        or taskResDatetimeMonthHigh or taskResDatetimeMonthLow or taskResDatetimeYearHigh or taskResDatetimeYearLow):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 0):
+            return 0
+        
+        return 1
+
+    # Illegal string chars , correct format
+    # def testAddTaskResetIllegalValues():
+
+    def testAddTaskResetInterval():
+        """
+        Test addTask() with a new task and a reset interval. The method should add a reset string (formatted "![interval]Z[date]T[time]) where the
+        time and date is the current time and date since no arguments was given by the user, and the method should return true.
+        """
+
+        now = datetime.datetime.now()
+
+        task = "Run testAddTaskResetInterval"
+        resetInterval = 5 * 60 * 60 # 5 hours
+        resetDatetime = None
+        taskRes = todo.Main.addTask(task, testTaskList, testDirectoryName, resetInterval, resetDatetime)
+
+        if(not taskRes):
+            return 1
+
+        incrementedDateTime = now # + datetime.timedelta(seconds = resetInterval)
+        expectedResetString1 = "!" + str(resetInterval) + "Z" + str(incrementedDateTime.year) + "-" + str(incrementedDateTime.month) + "-" + str(incrementedDateTime.day) + "T" + str(incrementedDateTime.hour) + ":00:00"
+        expectedResetString2 = "!" + str(resetInterval) + "Z" + str(incrementedDateTime.year) + "-" + str(incrementedDateTime.month) + "-" + str(incrementedDateTime.day) + "T" + str(incrementedDateTime.hour + 1) + ":00:00"
+        
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # If you're unlucky (or highly skilled), you may trigger the tests so that the datetime.datetime in this test runs a few milliseconds before the clock ticks over to a new hour,
+        # causing the resetString in the task file to have a different time, causing the test to fail. To prevent that, simply check on two very similar resetStrings.
+        expectedResetStringTimeException = fileRes[0] == "0 " + expectedResetString1 + " " + task or fileRes[0] == "0 " + expectedResetString2 + " " + task
+
+        if(len(fileRes) == 1 and expectedResetStringTimeException):
+            return 0
+        
+        return 1
+
+    def testAddTaskResetDateTime():
+        """
+        Test addTask() with a new task, reset interval, time and date. The method should add a reset string (formatted "![interval]Z[date]T[time]) where the
+        time and date is the current time and date since no arguments was given by the user, and the method should return true.
+        """
+
+        now = datetime.datetime.now()
+
+        task = "Run testAddTaskResetDateTime"
+        resetInterval = 5 * 60 * 60 # 5 hours
+        resetHour = "01"
+        resetDay = "02"
+        resetMonth = "03"
+        resetYear = str(now.year + 1)
+        resetDatetime = resetHour + ":" + resetDay + "-" + resetMonth + "-" + resetYear
+        taskRes = todo.Main.addTask(task, testTaskList, testDirectoryName, resetInterval, resetDatetime)
+
+        if(not taskRes):
+            return 1
+
+        expectedResetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + resetHour + ":00:00"
+        
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # This test, as opposed to testAddTaskResetInterval(), set time and date so no need to consider time roll over.
+        if(len(fileRes) == 1 and fileRes[0] == "0 " + expectedResetString + " " + task):
             return 0
         
         return 1

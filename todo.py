@@ -22,7 +22,7 @@ testArgs = ["-test"]
         # 1. Finish add
         # 2. Program input arguments (resetInterval, month, week, day, hour options)
         # - 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
-        # 4. Tests
+        # 4. Tests (add, format)
         # 5. Documentation
 
 class Main:
@@ -65,7 +65,7 @@ class Main:
             # Add a task
             elif(arg in addArgs):
                 if(argC - argIndex < 2):
-                    print("Too few arguments to save task, need at least 1: task (string), resetInterval (enum)(optional)")
+                    print("Too few arguments to save task, need at least 1: task (string), resetInterval (optional), reset date (optional, must be \"[hour]:[day]-[month]-[year]\")")
                     quit()
 
                 task = sys.argv[argIndex + 1]
@@ -388,11 +388,12 @@ class Main:
 
             # interval and datetime format:
             # !interval%datetime
-            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T")
+            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T") + " "
 
-            incrementedRestString = str(Main.incrementResetDateTime(resetString)[0]) + " "
-            if(incrementedRestString.strip() == None):
-                return False
+            # Increment resetString before adding it. Unnecessary? 
+            # incrementedRestString = str(Main.incrementResetDateTime(resetString)[0]) + " "
+            # if(incrementedRestString.strip() == None):
+            #     return False
 
             print("Task will reset every " + str(sanitizedResetInterval/60/60) + " hours from the date and time " + str(sanitizedResetDateTime))
 
@@ -405,7 +406,7 @@ class Main:
             os.mkdir(taskListDirectory)
 
         fullPath = Main.getFullFilePath(taskListPath, taskList)
-        taskLine = ("\n" if fileExists else "") + "0 " + incrementedRestString + task
+        taskLine = ("\n" if fileExists else "") + "0 " + resetString + task
 
         try:
             with open(fullPath, "a") as file:
