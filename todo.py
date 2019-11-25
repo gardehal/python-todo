@@ -18,12 +18,12 @@ helpArgs = ["-help", "-h"]
 testArgs = ["-test"]
 
 
-        # TODO reset
-        # 1. Finish add
-        # 2. Program input arguments (resetInterval, month, week, day, hour options)
-        # 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
-        # - 4. Tests (format, edit/update)
-        # 5. Documentation
+# TODO reset
+# 1. Finish add
+# 2. Program input arguments (resetInterval, month, week, day, hour options)
+# 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
+# - 4. Tests (format, edit/update)
+# 5. Documentation
 
 class Main:
     def main():
@@ -680,7 +680,7 @@ class Main:
                         # Though recursion, run method again, this should load the updated file into memory, update any others tasks who needs a reset and finally print all tasks.
                         return Main.formatPrintList(taskList, taskListPath, True)
 
-                    taskReset =  "\t" + taskArray[taskArrayIndex]
+                    # taskReset =  "\t" + taskArray[taskArrayIndex]
                     taskArrayIndex += 1
 
                 taskText = ""
@@ -706,6 +706,7 @@ class Main:
                     Main.addTask(taskLine, taskList, taskListPath)
                     Main.editTask([len(tasks) - 1, index], taskList, taskListPath, "insert")
 
+                # unused, rather ask user to fix
                 # taskLine has a resetString that is faulty, re-add task, and inform user there was a problem with the line
                 # elif(taskArray[1][0] == "!" and len(taskArray[1]) < 22):
                 #     taskErrorMessage = "[This task was altered by the program: There was a problem with the values for the automatic reset]"
@@ -724,9 +725,6 @@ class Main:
 
                 # Unknown error, implore the user fix and quit
                 else:
-                    # Current directory
-                    currentPath = Main.getFullFilePath("")
-
                     taskText = ""
                     taskArrayIndex = 1
 
@@ -739,8 +737,11 @@ class Main:
 
                     print("This task, number " + str(index + 1) + " was malformed. Please delete and add it again before trying agian. The data from file is:")
                     print("\t\"" + taskLine + "\"")
-                    print("But you probably only need to write the following command to restore it:")
-                    print("\t python " + currentPath + "todo.py -delete " + str(index + 1) + " -add \"" + taskText + "\" -insert " + str(index + 1) + " " + str(nTasks + 0))
+                    print("Delete the old, broken line:")
+                    print("\tpython todo.py -delete " + str(index + 1))
+                    print("... and add the task back:")
+                    print("\tpython todo.py -add \"" + taskText.rstrip() + "\"")
+                    
                     quit()
                     
                 # Though recursion, run method again, this should load the fixed file into memory and recursivly fix the 
@@ -853,10 +854,16 @@ class Main:
         print("To submit sentences with spaces between words, use quotation marks (\", \'), otherwise they will be counted as separate arguments.")
         print("\te.g.: $ python todo.py -add \"This is a sentence.\"")
         print("\n")
+        print("To apply the automatic reset for a task, it must be added with an string as the third argument, which is the interval between reset,")
+        print("simply \"[int]\", or \"[char][int]\". The char can be \"h\" for hours (default), \"d\" for days, \"w\" for weeks, or \"m\" for months. Maximum 3.5 months.")
+        print("To give a time of day or date for when the interval should trigger from, add a custom string as the fourth argument, which is \"[time of day, hours]:[date of month]-[month]-[year]\",")
+        print("each of which are optional, but require the value before (i.e. day require hour, month require day and so on). Minimum on year into the past, 5 years into the future.")
+        print("\te.g.: $ python todo.py -add \"Daily watering plants\" d1 12:30-01-2020")
+        print("\n")
 
         print(str(listTaskArgs) + ": prints an indexed list of tasks in the current task list.")
         print(str(listListsArgs) + ": prints a list of all task lists.")
-        print(str(addArgs) + " + string: adds the following string to the current task list.")
+        print(str(addArgs) + " + string + ?string + ?string: adds the following string to the current task list.")
         print(str(deleteArgs) + " + number: deletes the corresponding task in the current task list.")
         print(str(checkArgs) + " + number: toggle the completion of the corresponding task in the current task list.")
         print(str(switchArgs) + "+ number + number: switches the position of the two corresponding tasks in the current task list.")
