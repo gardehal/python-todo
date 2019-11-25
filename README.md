@@ -41,6 +41,7 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 - wrapping return messages
 - good argument
 - testing framework
+- less complex methods, distribute tasks to small methods
 
 ### TODO:
 - check spelling

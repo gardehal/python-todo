@@ -4,8 +4,3 @@
 0 six
 0 three
 0 one
-0 !604800Z2019-11-29T11:00:00 intervalonyl
-0 !604800Z2019-11-29T12:00:00 intervalanddate
-0 !3600Z2019-11-22T02:00:00 intervalandtime
-0 !3600Z2019-11-22T02:00:00 intervalanddatetimeandlongtring this is a longer strin    more spaces
-0 !3600Z2019-11-22T02:00:00 intervalanddatetimeandlongtring2 this is a longer strin    more spaces

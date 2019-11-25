@@ -21,8 +21,8 @@ testArgs = ["-test"]
         # TODO reset
         # 1. Finish add
         # 2. Program input arguments (resetInterval, month, week, day, hour options)
-        # - 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
-        # 4. Tests (add, format)
+        # 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
+        # - 4. Tests (format, edit/update)
         # 5. Documentation
 
 class Main:
@@ -459,7 +459,7 @@ class Main:
         string taskList \n
         string taskListPath \n
         string action \n
-        string filePermissions
+        string filePermissions (optional)
         """
 
         fullPath = Main.getFullFilePath(taskListPath, taskList)
@@ -487,7 +487,7 @@ class Main:
             if(action == "switch" or action == "insert"):
                 actionNumber = int(taskRefrence[1])
         except Exception as e:
-            print("\neditTask readFile error:")
+            print("\neditTask readTaskRefrence error:")
             print(e)
             return False
 
@@ -529,9 +529,29 @@ class Main:
                 print("\neditTask insert error:")
                 print(e)
                 return False
+
+        elif(action == "update"):
+            # Update taskline with new completedtask and resetString
+            lineSplit = fileArray[taskNumber].split()
+            
+            if(lineSplit[1][0] == "!" or len(lineSplit[1]) < 22):
+                incrementedRes = Main.incrementResetDateTime(lineSplit[1])
+
+                if(len(incrementedRes) == 0):
+                    return False
+
+                taskText = ""
+                taskTextIndex = 2
+                while taskTextIndex < len(lineSplit):
+                    taskText += (lineSplit[taskTextIndex] + " ")
+                    taskTextIndex += 1
+
+                fileArray[taskNumber] = ("0 " + incrementedRes[0] + " " + taskText + "\n")
+            else:
+                return False
             
         else:
-            print("Action not recognized, must be \"check\", \"delete\", \"switch\", \"insert\"")
+            print("Action not recognized, must be \"check\", \"delete\", \"switch\", \"insert\", \"update\".")
             return False
 
         # After modifying array, remove newline and trailing white space, if it exists
@@ -637,12 +657,29 @@ class Main:
 
                 taskReset = ""
                 if(taskArray[taskArrayIndex][0] == "!"):
+                    # Check for problems with resetString, usually length is a good indicator. Each number must be castable to an int (not checked here).
+                    if(len(taskArray[taskArrayIndex]) < 22):
+                        raise Exception
+
+                    # Get datetimes
                     now = datetime.datetime.now()
+                    oldResetString = taskArray[taskArrayIndex]
 
-                    # Compare datetimes
-                    # increment if date form file is now or in the past
+                    resetDateTimeString = oldResetString.split("Z")
+                    resetDateTimeStringSplit = resetDateTimeString[1].split("T")
+                    resetDateArray = resetDateTimeStringSplit[0].split("-")
+                    resetTimeArray = resetDateTimeStringSplit[1].split(":")
 
-                    print("this task contains a reset string")
+                    resetDateTime = datetime.datetime(int(resetDateArray[0]), int(resetDateArray[1]), int(resetDateArray[2]), int(resetTimeArray[0]), int(resetTimeArray[1]), int(resetTimeArray[2]))
+
+                    # If resetDateTime is in the past (less than now)
+                    if(resetDateTime < now):
+                        # Update
+                        editRes = Main.editTask([index], taskList, taskListPath, "update")
+                        
+                        # Though recursion, run method again, this should load the updated file into memory, update any others tasks who needs a reset and finally print all tasks.
+                        return Main.formatPrintList(taskList, taskListPath, True)
+
                     taskReset =  "\t" + taskArray[taskArrayIndex]
                     taskArrayIndex += 1
 
@@ -669,9 +706,41 @@ class Main:
                     Main.addTask(taskLine, taskList, taskListPath)
                     Main.editTask([len(tasks) - 1, index], taskList, taskListPath, "insert")
 
+                # taskLine has a resetString that is faulty, re-add task, and inform user there was a problem with the line
+                # elif(taskArray[1][0] == "!" and len(taskArray[1]) < 22):
+                #     taskErrorMessage = "[This task was altered by the program: There was a problem with the values for the automatic reset]"
+
+                #     task = ""
+                #     taskArrayIndex = 2
+                #     while taskArrayIndex < len(taskArray):
+                #         task += (taskArray[taskArrayIndex] + " ")
+                #         taskArrayIndex += 1
+
+                #     removedResetTaskLine = taskErrorMessage + " - " + task
+
+                #     Main.editTask([index], taskList, taskListPath, "delete")
+                #     Main.addTask(removedResetTaskLine, taskList, taskListPath)
+                #     Main.editTask([len(tasks) - 1, index], taskList, taskListPath, "insert")
+
                 # Unknown error, implore the user fix and quit
                 else:
-                    printArray.append("This task, number " + str(index + 1) + " was malformed. Please delete and add it again before trying agian. The text is: \"" + taskLine + "\"")
+                    # Current directory
+                    currentPath = Main.getFullFilePath("")
+
+                    taskText = ""
+                    taskArrayIndex = 1
+
+                    if(taskArray[1][0] == "!"):
+                        taskArrayIndex += 1
+
+                    while taskArrayIndex < len(taskArray):
+                        taskText += (taskArray[taskArrayIndex] + " ")
+                        taskArrayIndex += 1
+
+                    print("This task, number " + str(index + 1) + " was malformed. Please delete and add it again before trying agian. The data from file is:")
+                    print("\t\"" + taskLine + "\"")
+                    print("But you probably only need to write the following command to restore it:")
+                    print("\t python " + currentPath + "todo.py -delete " + str(index + 1) + " -add \"" + taskText + "\" -insert " + str(index + 1) + " " + str(nTasks + 0))
                     quit()
                     
                 # Though recursion, run method again, this should load the fixed file into memory and recursivly fix the 
