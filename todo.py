@@ -17,14 +17,6 @@ setListArgs = ["-setlist", "-sl"]
 helpArgs = ["-help", "-h"]
 testArgs = ["-test"]
 
-
-# TODO reset
-# 1. Finish add
-# 2. Program input arguments (resetInterval, month, week, day, hour options)
-# 3. Reset completeion and increment next resetDateTime in formatPrintList (+ detect malformed line)
-# - 4. Tests (format, edit/update)
-# 5. Documentation
-
 class Main:
     def main():
         # Defaults
@@ -534,7 +526,7 @@ class Main:
             # Update taskline with new completedtask and resetString
             lineSplit = fileArray[taskNumber].split()
             
-            if(lineSplit[1][0] == "!" or len(lineSplit[1]) < 22):
+            if(lineSplit[1][0] == "!" and len(lineSplit[1]) >= 22):
                 incrementedRes = Main.incrementResetDateTime(lineSplit[1])
 
                 if(len(incrementedRes) == 0):

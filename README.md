@@ -43,15 +43,15 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 - Better commenting in method
 - can be better at catching errors
 - try-except overuse? better to let it fail in try-except than if statement? (see addTask filename sanitation before try-except)
-- wrapping return messages
-- good argument
+- wrapping return data
+- good program argument parsing
 - testing framework
 - less complex methods, distribute tasks to small methods
-- float interval
+- minor issues and improvements (float interval)
 
 ### TODO:
 - check spelling
-- groom/trigger reset functions + tests + update help
+- Tests (format)
 - write Conclusion
 
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed

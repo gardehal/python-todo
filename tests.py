@@ -19,7 +19,7 @@ class Tests:
         """
 
         # For checking individual tests
-        # testIndividualRes = Tests.testAddTaskResetIllegalValues()
+        # testIndividualRes = Tests.testEditTaskUpdateNoResetString()
         # Tests.after(useBeforeAfter)
         
         # Tests.printTestResult(testIndividualRes, "testIndividual")
@@ -99,6 +99,12 @@ class Tests:
         Tests.after(useBeforeAfter)
         testEditTaskInsertTaskRes = Tests.testEditTaskInsertTask()
         Tests.after(useBeforeAfter)
+        testEditTaskUpdateNoResetStringRes = Tests.testEditTaskUpdateNoResetString()
+        Tests.after(useBeforeAfter)
+        testEditTaskUpdateMalformedStringRes = Tests.testEditTaskUpdateMalformedString()
+        Tests.after(useBeforeAfter)
+        testEditTaskUpdateResetRes = Tests.testEditTaskUpdateReset()
+        Tests.after(useBeforeAfter)
         testEditTaskIllegalTaskNumberRes = Tests.testEditTaskIllegalTaskNumber()
         Tests.after(useBeforeAfter)
         testEditTaskNoActionNumberRes = Tests.testEditTaskNoActionNumber()
@@ -143,13 +149,14 @@ class Tests:
         editFileRes1 = testEditTaskNoFileRes + testEditTaskNoActionRes + testEditTaskNoTaskNumberRes + testEditTaskIllegalNumberRes + testEditTaskIllegalPermissionRes
         editFileRes2 = testEditTaskCheckMarkMalformedTaskRes + testEditTaskCheckMarkTaskRes + testEditTaskDeleteTaskRes + testEditTaskSwitchLastTaskRes + testEditTaskSwitchTasksRes
         editFileRes3 = testEditTaskInsertLastTaskRes + testEditTaskInsertTaskRes + testEditTaskIllegalTaskNumberRes + testEditTaskNoActionNumberRes
+        editFileRes4 = testEditTaskUpdateNoResetStringRes + testEditTaskUpdateMalformedStringRes + testEditTaskUpdateResetRes
         formatPrintListRes1 = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedZeroOneInsertPositionRes
         formatPrintListRes2 = testFormatPrintListMalformedTaskTextRes + testFormatPrintListNormalFormatRes
         formatTaskListsPrintRes = testFormatTaskListsPrintNoDirectoryRes + testFormatTaskListsPrintEmptyDirectoryRes + testFormatTaskListsPrintTwoListsRes
         incrementResetDateTimeRes1 = testIncrementResetDateTimeNoStringRes + testIncrementResetDateTimeMalformedStringRes + testIncrementResetDateTimeIncrementNonIntRes
         incrementResetDateTimeRes2 = testIncrementResetDateTimeDateNonIntRes + testIncrementResetDateTimeTimeNonIntRes + testIncrementResetDateTimeIncrementValueRes
 
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes1 + addTaskRes2 + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes1 + addTaskRes2 + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + editFileRes4
         + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes + incrementResetDateTimeRes1 + incrementResetDateTimeRes2
 
         if(useBeforeAfter != 0):
@@ -191,6 +198,9 @@ class Tests:
         Tests.printTestResult(testEditTaskSwitchTasksRes, "testEditTaskSwitchTasks")
         Tests.printTestResult(testEditTaskInsertLastTaskRes, "testEditTaskInsertLastTask")
         Tests.printTestResult(testEditTaskInsertTaskRes, "testEditTaskInsertTask")
+        Tests.printTestResult(testEditTaskUpdateNoResetStringRes, "testEditTaskUpdateNoResetString")
+        Tests.printTestResult(testEditTaskUpdateMalformedStringRes, "testEditTaskUpdateMalformedString")
+        Tests.printTestResult(testEditTaskUpdateResetRes, "testEditTaskUpdateReset")
         Tests.printTestResult(testEditTaskIllegalTaskNumberRes, "testEditTaskIllegalTaskNumber")
         Tests.printTestResult(testEditTaskNoActionNumberRes, "testEditTaskNoActionNumber")
         Tests.printTestResult(testFormatPrintListNoFileRes, "testFormatPrintListNoFile")
@@ -1189,6 +1199,113 @@ class Tests:
 
         # Note: The newline has been moved from the end of the second task to the end of the third task
         if(len(secondFileRes) == 3 and secondFileRes[0] == (thirdTask + "\n") and secondFileRes[1] == firstTask and secondFileRes[2] == secondTask.rstrip()):
+            return 0
+
+        return 1
+
+    def testEditTaskUpdateNoResetString():
+        """
+        Test editTask() with a normal file, numbers, and line, but we are sending the task to be updated without a reset string. Should return false and not alter file.
+        """ 
+        
+        resetString = ""
+        taskLine = "0 " + resetString + " Run testEditTaskUpdateNoResetString"
+
+        filePath = Tests.writeFile(taskLine, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        taskNumber = 0
+        taskNumbers = [taskNumber]
+        actionName = "update"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumbers, testTaskList, testDirectoryName, actionName, permissions)
+
+        if(editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == taskLine):
+            return 0
+
+        return 1
+
+    def testEditTaskUpdateMalformedString():
+        """
+        Test editTask() with a normal file, numbers, and line, but the task has a malformed (short) resetString. Should return false and not put update the file. \n
+        Sidenote: the datetime library can handle single digit numbers, but this extra check keeps the program more consistent. 
+        """ 
+        
+        # Note: "short" strings, the month, day, hour, minSec should be 2 numbers (leading zero)
+        # Interval and year can be be 1 digit, but we're testing for less than minimal length which is 22
+        resetInterval = 1
+        resetYear = "2000"
+        resetMonth = "1"
+        resetDay = "1"
+        resetHour = "0"
+        resetMinSec = "0"
+        resetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + resetHour + ":" + resetMinSec + ":" + resetMinSec
+        taskLine = "0 " + resetString + " Run testEditTaskUpdateMalformedString"
+
+        filePath = Tests.writeFile(taskLine, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        taskNumber = 0
+        taskNumbers = [taskNumber]
+        actionName = "update"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumbers, testTaskList, testDirectoryName, actionName, permissions)
+
+        if(editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == taskLine):
+            return 0
+
+        return 1
+
+    def testEditTaskUpdateReset():
+        """
+        Test editTask() with a normal file, numbers, and line. Should return true and increment the resetString once with the seconds value after "!" before "Z".
+        """ 
+        
+        resetInterval = 60 * 60 # 1 hour, 3600 seconds
+        resetYear = "2000"
+        resetMonth = "01"
+        resetDay = "01"
+        resetHour = "00"
+        resetMinSec = "00"
+        resetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + resetHour + ":" + resetMinSec + ":" + resetMinSec
+        taskLine = "0 " + resetString + " Run testEditTaskUpdateReset"
+
+        incrementedResetHour = "01" # resetHour + resetInterval
+        expectedIncrementedResetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + incrementedResetHour + ":" + resetMinSec + ":" + resetMinSec
+
+        filePath = Tests.writeFile(taskLine, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        taskNumber = 0
+        taskNumbers = [taskNumber]
+        actionName = "update"
+        permissions = "w"
+        editRes = todo.Main.editTask(taskNumbers, testTaskList, testDirectoryName, actionName, permissions)
+        
+        if(not editRes):
+            return 1
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        # The line in the file should not longer be the same as the taskLine variable, the second "word" (resetString) should now be expectedIncrementedResetString
+        resetStringCompare = fileRes[0].split()[1] == expectedIncrementedResetString
+        if(len(fileRes) == 1 and fileRes[0] != taskLine and resetStringCompare):
             return 0
 
         return 1
