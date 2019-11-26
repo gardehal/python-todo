@@ -51,7 +51,7 @@ This is not the first time I've made a TODO list, but the previous one is dated 
 
 ### TODO:
 - check spelling
-- Tests (format)
+- Tests (double check)
 - write Conclusion
 
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed

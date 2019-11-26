@@ -19,7 +19,7 @@ class Tests:
         """
 
         # For checking individual tests
-        # testIndividualRes = Tests.testEditTaskUpdateNoResetString()
+        # testIndividualRes = Tests.testFormatTaskListReset()
         # Tests.after(useBeforeAfter)
         
         # Tests.printTestResult(testIndividualRes, "testIndividual")
@@ -121,6 +121,14 @@ class Tests:
         Tests.after(useBeforeAfter)
         testFormatPrintListNormalFormatRes = Tests.testFormatPrintListNormalFormat()
         Tests.after(useBeforeAfter)
+        testFormatTaskListMalformedResetStringRes = Tests.testFormatTaskListMalformedResetString()
+        Tests.after(useBeforeAfter)
+        testFormatTaskListIllegalResetStringValuesRes = Tests.testFormatTaskListIllegalResetStringValues()
+        Tests.after(useBeforeAfter)
+        testFormatTaskListNoIncrementRes = Tests.testFormatTaskListNoIncrement()
+        Tests.after(useBeforeAfter)
+        testFormatTaskListResetRes = Tests.testFormatTaskListReset()
+        Tests.after(useBeforeAfter)
         testFormatTaskListsPrintNoDirectoryRes = Tests.testFormatTaskListsPrintNoDirectory()
         Tests.after(useBeforeAfter)
         testFormatTaskListsPrintEmptyDirectoryRes = Tests.testFormatTaskListsPrintEmptyDirectory()
@@ -153,11 +161,12 @@ class Tests:
         formatPrintListRes1 = testFormatPrintListNoFileRes + testFormatPrintListEmptyFileRes + testFormatPrintListMalformedZeroOneRes + testFormatPrintListMalformedZeroOneInsertPositionRes
         formatPrintListRes2 = testFormatPrintListMalformedTaskTextRes + testFormatPrintListNormalFormatRes
         formatTaskListsPrintRes = testFormatTaskListsPrintNoDirectoryRes + testFormatTaskListsPrintEmptyDirectoryRes + testFormatTaskListsPrintTwoListsRes
+        formatTaskListsResetRes = testFormatTaskListMalformedResetStringRes + testFormatTaskListIllegalResetStringValuesRes + testFormatTaskListNoIncrementRes + testFormatTaskListResetRes
         incrementResetDateTimeRes1 = testIncrementResetDateTimeNoStringRes + testIncrementResetDateTimeMalformedStringRes + testIncrementResetDateTimeIncrementNonIntRes
         incrementResetDateTimeRes2 = testIncrementResetDateTimeDateNonIntRes + testIncrementResetDateTimeTimeNonIntRes + testIncrementResetDateTimeIncrementValueRes
 
         finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes1 + addTaskRes2 + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + editFileRes4
-        + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes + incrementResetDateTimeRes1 + incrementResetDateTimeRes2
+        + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes + formatTaskListsResetRes + incrementResetDateTimeRes1 + incrementResetDateTimeRes2
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -209,6 +218,10 @@ class Tests:
         Tests.printTestResult(testFormatPrintListMalformedZeroOneInsertPositionRes, "testFormatPrintListMalformedZeroOneInsertPosition")
         Tests.printTestResult(testFormatPrintListMalformedTaskTextRes, "testFormatPrintListMalformedTaskText")
         Tests.printTestResult(testFormatPrintListNormalFormatRes, "testFormatPrintListNormalFormat")
+        Tests.printTestResult(testFormatTaskListMalformedResetStringRes, "testFormatTaskListMalformedResetString")
+        Tests.printTestResult(testFormatTaskListIllegalResetStringValuesRes, "testFormatTaskListIllegalResetStringValues")
+        Tests.printTestResult(testFormatTaskListNoIncrementRes, "testFormatTaskListNoIncrement")
+        Tests.printTestResult(testFormatTaskListResetRes, "testFormatTaskListReset")
         Tests.printTestResult(testFormatTaskListsPrintNoDirectoryRes, "testFormatTaskListsPrintNoDirectory")
         Tests.printTestResult(testFormatTaskListsPrintEmptyDirectoryRes, "testFormatTaskListsPrintEmptyDirectory")
         Tests.printTestResult(testFormatTaskListsPrintTwoListsRes, "testFormatTaskListsPrintTwoLists")
@@ -1560,6 +1573,180 @@ class Tests:
         fileCheck = fileRes[0] == firstTask and fileRes[1] == secondTask
 
         if(fileCheck and formatCheck):
+            return 0
+
+        return 1
+
+    def testFormatTaskListMalformedResetString():
+        """
+        Test formatPrintList() with a normal file but the resetString is too short. Should quit and not alter the file.
+        """
+        
+        # Note: "short" strings, the month, day, hour, minSec should be 2 numbers (leading zero)
+        # Interval and year can be be 1 digit, but we're testing for less than minimal length which is 22
+        resetInterval = 1
+        resetYear = "2000"
+        resetMonth = "1"
+        resetDay = "1"
+        resetHour = "0"
+        resetMinSec = "0"
+        resetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + resetHour + ":" + resetMinSec + ":" + resetMinSec
+        taskLine = "0 " + resetString + " Run testFormatTaskListMalformedResetString"
+
+        filePath = Tests.writeFile(taskLine, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        try:
+            formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+            # Program did not quit, return 1
+            return 1
+        # except Exception as e:
+        except:
+            # Expected, nothing to do
+            formatResCheck = True
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == taskLine and formatResCheck):
+            return 0
+
+        return 1
+
+    def testFormatTaskListIllegalResetStringValues():
+        """
+        Test formatPrintList() with a normal file but the resetString has a char that is not castable to an integer. Should quit and not alter the file.
+        """
+        
+        resetInterval = 60 * 60 # 1 hour, 3600 seconds
+        resetYear = "2000"
+        resetMonth = "01"
+        # A is not castable to int
+        resetDay = "a"
+        resetHour = "00"
+        resetMinSec = "00"
+        resetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + resetHour + ":" + resetMinSec + ":" + resetMinSec
+        taskLine = "0 " + resetString + " Run testFormatTaskListIllegalResetStringValues"
+
+        filePath = Tests.writeFile(taskLine, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        try:
+            formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+            # Program did not quit, return 1
+            return 1
+        # except Exception as e:
+        except:
+            # Expected, nothing to do
+            formatResCheck = True
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == taskLine and formatResCheck):
+            return 0
+
+        return 1
+
+    def testFormatTaskListNoIncrement():
+        """
+        Test formatPrintList() with a normal file and line with a resetString that is in the future. Should return a formatted array and no increment the resetString.
+        """
+        
+        resetInterval = 60 * 60 # 1 hour, 3600 seconds
+        now = datetime.datetime.now()
+        resetYear = str(now.year + 1)
+        resetMonth = "01"
+        resetDay = "01"
+        resetHour = "00"
+        resetMinSec = "00"
+        resetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + resetHour + ":" + resetMinSec + ":" + resetMinSec
+        task = "Run testFormatTaskListNoIncrement"
+        taskLine = "0 " + resetString + " " + task
+
+        filePath = Tests.writeFile(taskLine, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+        lineSplit = formatRes[0].split()
+        lineRecreation = lineSplit[2] + " " + lineSplit[3]
+
+        formatResCheck = len(formatRes) == 1 and lineRecreation == task
+
+        fileRes = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileRes) == 1 and fileRes[0] == taskLine and formatResCheck):
+            return 0
+
+        return 1
+    
+    def testFormatTaskListReset():
+        """
+        Test formatPrintList() with a normal file and line with a resetString that is in the past. Should return a formatted array and increment the resetString to today.
+        """
+        
+        resetInterval = 60 * 60 # 1 hours, 3600 seconds
+        now = datetime.datetime.now()
+        oneHourAgo = now - datetime.timedelta(hours = 1)
+
+        # Since the method increments recursivly until the resetString is in the future, about once
+        resetYear = str(oneHourAgo.year)
+        resetMonth = str(oneHourAgo.month)
+        resetDay = str(oneHourAgo.day)
+        resetHour = str(oneHourAgo.hour)
+        resetMinSec = "00"
+        resetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + resetHour + ":" + resetMinSec + ":" + resetMinSec
+        task = "Run testFormatTaskListReset"
+        taskLine = "1 " + resetString + " " + task
+
+        filePath = Tests.writeFile(taskLine, testTaskList, testDirectoryName)
+
+        if(filePath == None):
+            return 1
+
+        # Make sure everything is in order in the file before
+        fileResBefore = Tests.readFile(testTaskList, testDirectoryName)
+
+        if(len(fileResBefore) != 1 and fileResBefore[0] != taskLine):
+            return 1
+
+        # Run method
+        formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
+
+        lineSplit = formatRes[0].split()
+        lineRecreation = lineSplit[2] + " " + lineSplit[3]
+
+        formatResCheck = (len(formatRes) == 1 and lineSplit[1] == "No" and lineRecreation == task)
+
+        # Check file after
+        fileResAfter = Tests.readFile(testTaskList, testDirectoryName)
+
+        fileResSplit = fileResAfter[0].split()
+        fileResAfterCheck = (len(fileResAfter) == 1 and fileResAfter[0] != taskLine and str(fileResSplit[0]) == "0")
+
+        # Check if resetString is incremented
+        inOneHour = now + datetime.timedelta(seconds = resetInterval)
+        inOneHourResetString = "!" + str(resetInterval) + "Z" + str(inOneHour.year) + "-" + str(inOneHour.month) + "-" + str(inOneHour.day) + "T" + str(inOneHour.hour) + ":" + resetMinSec + ":" + resetMinSec
+        
+        incrementedCheck = fileResSplit[1] != resetString and fileResSplit[1] == inOneHourResetString
+
+        # Not 100% sure about time thoughout the day, this test uses relative time (T-1 hour) and result might vary based on that 
+        # WIP
+        print(incrementedCheck)
+        print(resetString)
+        print(fileResSplit[1])
+        print(inOneHourResetString)
+        
+
+
+        if(formatResCheck and incrementedCheck and fileResAfterCheck):
             return 0
 
         return 1
