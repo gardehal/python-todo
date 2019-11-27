@@ -49,6 +49,7 @@ As the project comes to an ending, I think back to what I have accomplished and 
 7. Less complex function, distribute tasks to small function
 8. Minor issues and improvements
 9. Documentation
+10. Git structure
  
 1. Overall I think the commenting of the code has improved a lot, mostly due to the function comments which shows up (at least in Visual Studio Code) when you hover the function. I found it is also a good way give more information about arguments that may not show up otherwise. I will continue to use this and improve on the information given, so the comments will be more useful.
 2. During this project I put more effort into limiting the error that a user may inflict though standard usage and also file tampering or even corruption of the file. This has been a mixed bag, as sometime I see a sea of if-statements wondering if it is too much. Could be streamlined or defer error catching. This should improve as I delegate tasks to other, smaller methods.
@@ -59,6 +60,7 @@ As the project comes to an ending, I think back to what I have accomplished and 
 7. The biggest regret I have from this project is that I fell into the trap of making a few, complex functions. A lot of the function in [todo.py](todo.py) should be split up into smaller methods, which makes the code more modular, more reusable, easier to test, and overall less complex. The reasons why I did no do this is mainly due to a lack of testing framework, as I would have to add all the tests manually to the main test function. I also did not like the idea of expanding the number of functions in the project as I already had extended the scope more than expected.
 8. When doing the project I came up with more improvements as I went along, as I did not pre-plan or structure the project. For such a small project I don't see any problems with this, but the natural result is that the scope grows a little every day. I could go on and make the ultimate todo program, but by now it's a reasonable size. There are minor improvements I have written down in the TODO section, which I may or may not do sometime in the future.
 9. I should work on my documentation, cite more reasons and patterns from the code. Even some simple visual models or more detailed examples could be useful for people with problems that are not addressed by the Help section. Easy to do later.
+10. I intentionally did not try to emulate a more realistic git version as the focus was on the code.
  
 ### TODO:
 - check spelling
