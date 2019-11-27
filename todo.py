@@ -698,7 +698,7 @@ class Main:
                     Main.addTask(taskLine, taskList, taskListPath)
                     Main.editTask([len(tasks) - 1, index], taskList, taskListPath, "insert")
 
-                # unused, rather ask user to fix
+                # Unused, rather ask user to fix as the resetValues are hard to extrapolate the problem from
                 # taskLine has a resetString that is faulty, re-add task, and inform user there was a problem with the line
                 # elif(taskArray[1][0] == "!" and len(taskArray[1]) < 22):
                 #     taskErrorMessage = "[This task was altered by the program: There was a problem with the values for the automatic reset]"
