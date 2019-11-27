@@ -650,8 +650,6 @@ class Tests:
         time and date is the current time and date since no arguments was given by the user, and the method should return true.
         """
 
-        now = datetime.datetime.now()
-
         task = "Run testAddTaskResetInterval"
         resetInterval = 5 * 60 * 60 # 5 hours
         resetDatetime = None
@@ -660,9 +658,13 @@ class Tests:
         if(not taskRes):
             return 1
 
-        incrementedDateTime = now # + datetime.timedelta(seconds = resetInterval)
-        expectedResetString1 = "!" + str(resetInterval) + "Z" + str(incrementedDateTime.year) + "-" + str(incrementedDateTime.month) + "-" + str(incrementedDateTime.day) + "T" + str(incrementedDateTime.hour) + ":00:00"
-        expectedResetString2 = "!" + str(resetInterval) + "Z" + str(incrementedDateTime.year) + "-" + str(incrementedDateTime.month) + "-" + str(incrementedDateTime.day) + "T" + str(incrementedDateTime.hour + 1) + ":00:00"
+        now = datetime.datetime.now()
+        leadingZeroHour1 = (str(now.hour) if now.hour > 9 else "0" + str(now.hour))
+        future = now + datetime.timedelta(hours = 1)
+        leadingZeroHour2 = (str(future.hour) if future.hour > 9 else "0" + str(future.hour))
+
+        expectedResetString1 = "!" + str(resetInterval) + "Z" + str(now.year) + "-" + str(now.month) + "-" + str(now.day) + "T" + leadingZeroHour1 + ":00:00"
+        expectedResetString2 = "!" + str(resetInterval) + "Z" + str(now.year) + "-" + str(now.month) + "-" + str(now.day) + "T" + leadingZeroHour2 + ":00:00"
         
         fileRes = Tests.readFile(testTaskList, testDirectoryName)
 
@@ -1700,7 +1702,7 @@ class Tests:
         resetYear = str(oneHourAgo.year)
         resetMonth = str(oneHourAgo.month)
         resetDay = str(oneHourAgo.day)
-        resetHour = str(oneHourAgo.hour)
+        resetHour = (str(oneHourAgo.hour) if oneHourAgo.hour > 9 else "0" + str(oneHourAgo.hour))
         resetMinSec = "00"
         resetString = "!" + str(resetInterval) + "Z" + resetYear + "-" + resetMonth + "-" + resetDay + "T" + resetHour + ":" + resetMinSec + ":" + resetMinSec
         task = "Run testFormatTaskListReset"
@@ -1733,18 +1735,11 @@ class Tests:
 
         # Check if resetString is incremented
         inOneHour = now + datetime.timedelta(seconds = resetInterval)
-        inOneHourResetString = "!" + str(resetInterval) + "Z" + str(inOneHour.year) + "-" + str(inOneHour.month) + "-" + str(inOneHour.day) + "T" + str(inOneHour.hour) + ":" + resetMinSec + ":" + resetMinSec
+        newHour = inOneHour.hour
+        leadingZeroNewHour = (str(newHour) if newHour > 9 else "0" + str(newHour))
+        inOneHourResetString = "!" + str(resetInterval) + "Z" + str(inOneHour.year) + "-" + str(inOneHour.month) + "-" + str(inOneHour.day) + "T" + leadingZeroNewHour + ":" + resetMinSec + ":" + resetMinSec
         
         incrementedCheck = fileResSplit[1] != resetString and fileResSplit[1] == inOneHourResetString
-
-        # Not 100% sure about time thoughout the day, this test uses relative time (T-1 hour) and result might vary based on that 
-        # WIP
-        print(incrementedCheck)
-        print(resetString)
-        print(fileResSplit[1])
-        print(inOneHourResetString)
-        
-
 
         if(formatResCheck and incrementedCheck and fileResAfterCheck):
             return 0
