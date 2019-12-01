@@ -165,8 +165,7 @@ class Tests:
         incrementResetDateTimeRes1 = testIncrementResetDateTimeNoStringRes + testIncrementResetDateTimeMalformedStringRes + testIncrementResetDateTimeIncrementNonIntRes
         incrementResetDateTimeRes2 = testIncrementResetDateTimeDateNonIntRes + testIncrementResetDateTimeTimeNonIntRes + testIncrementResetDateTimeIncrementValueRes
 
-        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes1 + addTaskRes2 + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + editFileRes4
-        + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes + formatTaskListsResetRes + incrementResetDateTimeRes1 + incrementResetDateTimeRes2
+        finalRes = getFullFilePathRes + getCurrentTaskListRes + addTaskRes1 + addTaskRes2 + loadFileRes + setListRes + editFileRes1 + editFileRes2 + editFileRes3 + editFileRes4 + formatPrintListRes1 + formatPrintListRes2 + formatTaskListsPrintRes + formatTaskListsResetRes + incrementResetDateTimeRes1 + incrementResetDateTimeRes2
 
         if(useBeforeAfter != 0):
             # Restore print fuction
@@ -659,18 +658,23 @@ class Tests:
             return 1
 
         now = datetime.datetime.now()
-        leadingZeroHour1 = (str(now.hour) if now.hour > 9 else "0" + str(now.hour))
         future = now + datetime.timedelta(hours = 1)
-        leadingZeroHour2 = (str(future.hour) if future.hour > 9 else "0" + str(future.hour))
 
-        expectedResetString1 = "!" + str(resetInterval) + "Z" + str(now.year) + "-" + str(now.month) + "-" + str(now.day) + "T" + leadingZeroHour1 + ":00:00"
-        expectedResetString2 = "!" + str(resetInterval) + "Z" + str(now.year) + "-" + str(now.month) + "-" + str(now.day) + "T" + leadingZeroHour2 + ":00:00"
+        expectedResetString1 = "!" + str(resetInterval) + "Z" + str(now.year) + "-" + str(now.month).zfill(2) + "-" + str(now.day).zfill(2) + "T" + str(now.hour).zfill(2) + ":00:00"
+        expectedResetString2 = "!" + str(resetInterval) + "Z" + str(now.year) + "-" + str(now.month).zfill(2) + "-" + str(now.day).zfill(2) + "T" + str(future.hour).zfill(2) + ":00:00"
         
         fileRes = Tests.readFile(testTaskList, testDirectoryName)
 
         # If you're unlucky (or highly skilled), you may trigger the tests so that the datetime.datetime in this test runs a few milliseconds before the clock ticks over to a new hour,
         # causing the resetString in the task file to have a different time, causing the test to fail. To prevent that, simply check on two very similar resetStrings.
         expectedResetStringTimeException = fileRes[0] == "0 " + expectedResetString1 + " " + task or fileRes[0] == "0 " + expectedResetString2 + " " + task
+
+        print("testAddTaskResetInterval")
+        print(len(fileRes) == 1)
+        print(expectedResetStringTimeException)
+        print(fileRes[0])
+        print("0 " + expectedResetString1 + " " + task)
+        # print()
 
         if(len(fileRes) == 1 and expectedResetStringTimeException):
             return 0
@@ -1736,8 +1740,7 @@ class Tests:
         # Check if resetString is incremented
         inOneHour = now + datetime.timedelta(seconds = resetInterval)
         newHour = inOneHour.hour
-        leadingZeroNewHour = (str(newHour) if newHour > 9 else "0" + str(newHour))
-        inOneHourResetString = "!" + str(resetInterval) + "Z" + str(inOneHour.year) + "-" + str(inOneHour.month) + "-" + str(inOneHour.day) + "T" + leadingZeroNewHour + ":" + resetMinSec + ":" + resetMinSec
+        inOneHourResetString = "!" + str(resetInterval) + "Z" + str(inOneHour.year) + "-" + str(inOneHour.month).zfill(2) + "-" + str(inOneHour.day).zfill(2) + "T" + str(newHour).zfill(2) + ":" + resetMinSec + ":" + resetMinSec
         
         incrementedCheck = fileResSplit[1] != resetString and fileResSplit[1] == inOneHourResetString
 

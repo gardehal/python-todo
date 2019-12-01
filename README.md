@@ -63,8 +63,6 @@ As the project comes to an ending, I think back to what I have accomplished and 
 10. I intentionally did not try to emulate a more realistic git version as the focus was on the code.
  
 ### TODO:
-- check spelling
-- technical documentation
  
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed
 - delete all
