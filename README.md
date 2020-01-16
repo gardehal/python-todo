@@ -65,6 +65,7 @@ As the project comes to an ending, I think back to what I have accomplished and 
 ### TODO:
  
 - when setting up on a new computer, default tasklist may not be initialized. Empty print spam, check for tasklist name in all-task-list and default name set (setlist "default" fixed it)
+- "Fatal Python error: Cannot recover from stack overflow." + spam on change to default list (might be related to set up on new computer)
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed
 - delete all
 - delete all checked tasks
