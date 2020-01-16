@@ -19,6 +19,14 @@ testArgs = ["-test"]
 
 class Main:
     def main():
+        
+        # TODO tests
+        # Had issues with stack overflow when no .pyc files were present, if no __pycache__ folder, quit
+        pycachePath = Main.getFullFilePath("__pycache__")
+        if(not os.path.exists(pycachePath)):
+            print("Setup complete!")
+            quit()
+
         # Defaults
         allTaskListsFileName = "all-task-lists"
         allTaskListsPath = "."
