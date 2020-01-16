@@ -64,6 +64,7 @@ As the project comes to an ending, I think back to what I have accomplished and 
  
 ### TODO:
  
+- when setting up on a new computer, default tasklist may not be initialized. Empty print spam, check for tasklist name in all-task-list and default name set (setlist "default" fixed it)
 - when printing all lists, add check (0/1 similar to task) to check if all tasks in list are completed
 - delete all
 - delete all checked tasks
