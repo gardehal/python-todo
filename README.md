@@ -50,7 +50,7 @@ As the project comes to an ending, I think back to what I have accomplished and 
 8. Minor issues and improvements
 9. Documentation
 10. Git structure
- 
+---
 1. Overall I think the commenting of the code has improved a lot, mostly due to the function comments which shows up (at least in Visual Studio Code) when you hover the function. I found it is also a good way give more information about arguments that may not show up otherwise. I will continue to use this and improve on the information given, so the comments will be more useful.
 2. During this project I put more effort into limiting the error that a user may inflict though standard usage and also file tampering or even corruption of the file. This has been a mixed bag, as sometime I see a sea of if-statements wondering if it is too much. Could be streamlined or defer error catching. This should improve as I delegate tasks to other, smaller methods.
 3. This point is similar to the one above, but with try-except.

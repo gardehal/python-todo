@@ -1,4 +1,4 @@
 
 tasklists/*
 all-task-lists.txt
-*/__pychache__ 
+*.pyc
