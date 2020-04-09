@@ -14,6 +14,7 @@ checkArgs = ["-check", "-c", "-x"]
 switchArgs = ["-switch", "-s"]
 insertArgs = ["-insert", "-i"]
 setListArgs = ["-setlist", "-sl"]
+editArgs = ["-edit", "-e"]
 helpArgs = ["-help", "-h"]
 testArgs = ["-test"]
 
@@ -174,14 +175,35 @@ class Main:
                     print("Too few arguments to check task, need at least 1: tasknumber (int)")
                     quit()
                 
-                taskNumber = int(sys.argv[argIndex + 1]) - 1
+                argIndex += 1
+                nChecks = 0
+                finalRes = True
+                try:
+                    while(argIndex < argC):
+                        if(sys.argv[argIndex][0] is "-"):
+                            raise StopIteration
 
-                checkRes = Main.editTask([taskNumber], taskList, taskListPath, "check", "w")
-                print(("Successfully" if checkRes else "Failed to") + " check task.")
+                        nChecks += 1
+                        taskNumber = int(sys.argv[argIndex]) - 1
+                        checkRes = Main.editTask([taskNumber], taskList, taskListPath, "check", "w")
 
-                argIndex += 2
+                        if(not checkRes):
+                            finalRes = False
+                            print("Failed to check task number " + argIndex + ".")
+
+                        argIndex += 1
+                        
+                except StopIteration:
+                    ignored = True
+
+                if(nChecks > 1 and finalRes):
+                    print("Successfully checked " + ("all" if finalRes else "some") + " tasks.")
+                elif(nChecks is 1 and finalRes):
+                    print("Successfully checked task.")
+
                 continue
 
+            # Insert a task into a position
             elif(arg in insertArgs):
                 if(argC - argIndex < 2):
                     print("Too few arguments to insert task, need at least 2: tasknumber (int), insertNumber(int)")
@@ -223,6 +245,12 @@ class Main:
 
                 argIndex += 2
                 continue
+
+            # Edit
+            elif(arg in editArgs):
+                fullPath = Main.getFullFilePath(taskListPath, taskList)
+                os.startfile(fullPath)
+                quit()
 
             # Help
             elif(arg in helpArgs):
@@ -838,6 +866,7 @@ class Main:
         # switchArgs = ["-switch", "-s"]
         # insertArgs = ["-insert", "-i"]
         # setListArgs = ["-setList", "-sl"]
+        # editArgs = ["-edit", "-e"]
         # helpArgs = ["-help", "-h"]
         # testArgs = ["-test"]
     }
@@ -869,6 +898,7 @@ class Main:
         print(str(switchArgs) + "+ number + number: switches the position of the two corresponding tasks in the current task list.")
         print(str(insertArgs) + "+ number + number: inserts the task (first number) into position of the second number.")
         print(str(setListArgs) + ": string: sets the current task list to the string given.")
+        print(str(editArgs) + ": opens a text file where you can edit the contents of the list.")
         print(str(helpArgs) + ": prints this information about input arguments.")
         print(str(testArgs) + ": runs unit tests and prints the result.")
             
