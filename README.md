@@ -76,4 +76,3 @@ As the project comes to an ending, I think back to what I have accomplished and 
 - float reset interval
 - colored or more styled text - May require changes in system options, if not done it will print annoying text and I will probably not do if/else statements for each print
 - Flag or symbol for repeating task
-- Use spaces or deviders (|) not tabs in print 

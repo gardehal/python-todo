@@ -486,7 +486,7 @@ class Main:
         int array taskRefrence \n
         string taskList \n
         string taskListPath \n
-        string action \n
+        string action (\"check\", \"delete\", \"switch\", \"insert\", \"update\") \n
         string filePermissions (optional)
         """
 
@@ -659,7 +659,7 @@ class Main:
             # Prints should be added to return array at the end of method, or sent separatly, though other array (array of metadata array and content array, aka wrap) or on separate method
             # Legend for task list
             print("From task list: " + taskList)
-            print("#" + "\t" + "Completed?" + "\t" + "Task")
+            print(" #" + " - " + "Done?" + " - " + "Task")
 
         printArray = []
 
@@ -680,11 +680,13 @@ class Main:
                 if(completedNumber != 0 and completedNumber != 1 or len(taskArray) < 2):
                     raise Exception
 
-                taskCompleted = "Yes" if completedNumber == 1 else "No"
+                taskCompleted = "Yes" if completedNumber == 1 else "No " # Note space after no, so both yes and no forms 3 characters
                 taskArrayIndex += 1
 
                 taskReset = ""
+                isRepeating = False
                 if(taskArray[taskArrayIndex][0] == "!"):
+                    isRepeating = True
                     # Check for problems with resetString, usually length is a good indicator. Each number must be castable to an int (not checked here).
                     if(len(taskArray[taskArrayIndex]) < 22):
                         raise Exception
@@ -716,7 +718,9 @@ class Main:
                     taskText += str(taskArray[taskArrayIndex]) + " "
                     taskArrayIndex += 1
                 
-                printArray.append(str(index + 1) + "\t" + str(taskCompleted) + str(taskReset) + "\t\t" + str(taskText))
+                incI = index + 1
+                displayIndex = str(incI) if incI > 99 else "  " + str(incI) if incI < 10 else " " + str(incI) # Index numbers, could have 001 .. 010 .. 100 etc. 
+                printArray.append(displayIndex + " - " + str(taskCompleted) + str(taskReset) + " - " + str(taskText)) #+ " - (repeating: x hours)" if isRepeating else "")
             except Exception as e:
                 # print("\nformatPrintList error: ")
                 # print(e)
