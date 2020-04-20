@@ -655,13 +655,14 @@ class Main:
         bool retry (optional)
         """
 
+        printArray = []
+        hasUpdatedTasks = False
+
         if(not retry):
             # Prints should be added to return array at the end of method, or sent separatly, though other array (array of metadata array and content array, aka wrap) or on separate method
             # Legend for task list
-            print("From task list: " + taskList)
-            print(" #" + " - " + "Done?" + " - " + "Task")
-
-        printArray = []
+            printArray.append("From task list: " + taskList)
+            printArray.append(" #" + " - " + "Done?" + " - " + "Task")
 
         tasks = Main.loadFile(taskList, taskListPath)
         if(len(tasks) == 0):
@@ -684,9 +685,8 @@ class Main:
                 taskArrayIndex += 1
 
                 taskReset = ""
-                isRepeating = False
                 if(taskArray[taskArrayIndex][0] == "!"):
-                    isRepeating = True
+                    taskCompleted += "*"
                     # Check for problems with resetString, usually length is a good indicator. Each number must be castable to an int (not checked here).
                     if(len(taskArray[taskArrayIndex]) < 22):
                         raise Exception
@@ -712,6 +712,8 @@ class Main:
 
                     # taskReset =  "\t" + taskArray[taskArrayIndex]
                     taskArrayIndex += 1
+                else:
+                    taskCompleted += " "
 
                 taskText = ""
                 while taskArrayIndex < len(taskArray):
@@ -720,7 +722,7 @@ class Main:
                 
                 incI = index + 1
                 displayIndex = str(incI) if incI > 99 else "  " + str(incI) if incI < 10 else " " + str(incI) # Index numbers, could have 001 .. 010 .. 100 etc. 
-                printArray.append(displayIndex + " - " + str(taskCompleted) + str(taskReset) + " - " + str(taskText)) #+ " - (repeating: x hours)" if isRepeating else "")
+                printArray.append(displayIndex + " - " + str(taskCompleted) + str(taskReset) + " - " + str(taskText))
             except Exception as e:
                 # print("\nformatPrintList error: ")
                 # print(e)
@@ -781,6 +783,12 @@ class Main:
                 return Main.formatPrintList(taskList, taskListPath, True)
 
             index += 1
+            
+        if(not retry):
+            printArray.append("* task is repetetive.")
+            
+            if(hasUpdatedTasks):
+                printArray.append("Some tasks have updated.")
 
         return printArray
 

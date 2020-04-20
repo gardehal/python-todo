@@ -75,4 +75,7 @@ As the project comes to an ending, I think back to what I have accomplished and 
 - formatPrintList when empty should return an array of one line: ["The current list (listname) is empty."] or object
 - float reset interval
 - colored or more styled text - May require changes in system options, if not done it will print annoying text and I will probably not do if/else statements for each print
-- Flag or symbol for repeating task
+- Flag or symbol for repeating task (Star * after yes or no, at the end: "* repeating tasks will be reset after some time." might be smart to add a print option or argument to display time to reset and at what intervals from datetime etc.)
+- Options: a file with keys and options structured "key: x" where the value will always be the second element after string split on space (" "). Could be simple things like what divider to use, or show/hide reset data, what symbol to use for todo status (default "yes" and "no ", but could be 0/1, completed/to do etc, maybe tell user to check their own charater numbers (yes = 3, no = 2, "no" must be padded to become 3 characters long to match "yes")) 
+- add message to show some todos have been reset
+- check for resets before checking? (currently: when checking an item after it reset without printing will be not check anything, as the printing and resetting wil overwrite the check)
