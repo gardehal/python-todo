@@ -661,8 +661,9 @@ class Main:
         if(not retry):
             # Prints should be added to return array at the end of method, or sent separatly, though other array (array of metadata array and content array, aka wrap) or on separate method
             # Legend for task list
-            printArray.append("From task list: " + taskList)
-            printArray.append(" #" + " - " + "Done?" + " - " + "Task")
+            print("From task list: " + taskList)
+            print("* task is repetetive." + ("NB!: Some tasks have updated." if(hasUpdatedTasks) else "")) # Always false
+            print(" #" + " - " + "Done?" + " - " + "Task")
 
         tasks = Main.loadFile(taskList, taskListPath)
         if(len(tasks) == 0):
@@ -783,12 +784,6 @@ class Main:
                 return Main.formatPrintList(taskList, taskListPath, True)
 
             index += 1
-            
-        if(not retry):
-            printArray.append("* task is repetetive.")
-            
-            if(hasUpdatedTasks):
-                printArray.append("Some tasks have updated.")
 
         return printArray
 

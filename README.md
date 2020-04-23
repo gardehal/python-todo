@@ -79,3 +79,4 @@ As the project comes to an ending, I think back to what I have accomplished and 
 - Options: a file with keys and options structured "key: x" where the value will always be the second element after string split on space (" "). Could be simple things like what divider to use, or show/hide reset data, what symbol to use for todo status (default "yes" and "no ", but could be 0/1, completed/to do etc, maybe tell user to check their own charater numbers (yes = 3, no = 2, "no" must be padded to become 3 characters long to match "yes")) 
 - add message to show some todos have been reset
 - check for resets before checking? (currently: when checking an item after it reset without printing will be not check anything, as the printing and resetting wil overwrite the check)
+- line 1569 in tests, simplified formatting as print line could be support function 

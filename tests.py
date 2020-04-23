@@ -9,6 +9,8 @@ testDirectoryName = "test-tasks"
 testTaskList = "tests"
 testAllTaskListsDirectoryName = ""
 testAllTaskListsFileName = "test-all-task-lists"
+
+columnSeparator = " - "
     
 class Tests:
 
@@ -1564,9 +1566,9 @@ class Tests:
         formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
 
         # Format is:
-        # [index] ["Yes"/"No"] [task]
-        firstTaskFormat = "1\tNo\t\t" + firstTaskText
-        secondTaskFormat = "2\tYes\t\t" + secondTaskText
+        # [leading zeros][index] - ["Yes"/"No "][" "/"*"] - [task]
+        firstTaskFormat = "  1" + columnSeparator + "No  " + columnSeparator + firstTaskText
+        secondTaskFormat = "  2" + columnSeparator + "Yes " + columnSeparator + secondTaskText
 
         # When the method formatPrintList was changed to parse line into array, this test failed. Removing trailing whitespace makes it pass, 
         # which is understandable for the first line (rstrip removes the newline), but for some reason the second line needs to be rstripped too for the test to pass, 
@@ -1682,7 +1684,7 @@ class Tests:
         formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
 
         lineSplit = formatRes[0].split()
-        lineRecreation = lineSplit[2] + " " + lineSplit[3]
+        lineRecreation = lineSplit[5] + " " + lineSplit[6]
 
         formatResCheck = len(formatRes) == 1 and lineRecreation == task
 
@@ -1727,9 +1729,9 @@ class Tests:
         formatRes = todo.Main.formatPrintList(testTaskList, testDirectoryName)
 
         lineSplit = formatRes[0].split()
-        lineRecreation = lineSplit[2] + " " + lineSplit[3]
+        lineRecreation = lineSplit[5] + " " + lineSplit[6]
 
-        formatResCheck = (len(formatRes) == 1 and lineSplit[1] == "No" and lineRecreation == task)
+        formatResCheck = (len(formatRes) == 1 and lineSplit[2] == "No" and lineRecreation == task)
 
         # Check file after
         fileResAfter = Tests.readFile(testTaskList, testDirectoryName)
