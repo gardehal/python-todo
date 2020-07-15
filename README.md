@@ -7,6 +7,9 @@ Python console program for managing TODO-tasks.
 2. Make sure Python is defined on PATH
 3. Navigate to folder in CLI
 4. $ python todo.py [arguments...]
+
+## Known issues
+- Adding tasks that reset in less than a minute can cause a crash when printing tasks. No tasks are affected by this, and the program will usualy work after printing list with that task a few times, or simply removingt he task. try: "python todo.py -delete [task number]" or "python todo.py -edit", then remove the task.
  
 ## Help
 - Arguments marked with ? are optional.

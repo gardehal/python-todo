@@ -6,15 +6,17 @@ import calendar
 
 import tests
 
+os.system("")
 listTaskArgs = ["-tasks", "-t"]
 listListsArgs = ["-lists", "-l"]
 addArgs = ["-add", "-a"]
-deleteArgs = ["-delete", "-d"]
+deleteArgs = ["-delete", "-del"]
 checkArgs = ["-check", "-c", "-x"]
 switchArgs = ["-switch", "-s"]
 insertArgs = ["-insert", "-i"]
 setListArgs = ["-setlist", "-sl"]
 editArgs = ["-edit", "-e"]
+dateArgs = ["-date", "-d"]
 helpArgs = ["-help", "-h"]
 testArgs = ["-test"]
 
@@ -250,6 +252,11 @@ class Main:
             elif(arg in editArgs):
                 fullPath = Main.getFullFilePath(taskListPath, taskList)
                 os.startfile(fullPath)
+                quit()
+
+            # Date
+            elif(arg in dateArgs):
+                Main.printDateInfo()
                 quit()
 
             # Help
@@ -864,16 +871,25 @@ class Main:
             return None
 
         return resArray
+     
+    def printDateInfo():
+        """
+        Prints local date information.
+        """
+        now = datetime.datetime.now()
+        week = datetime.date(now.year, now.month, now.day).isocalendar()[1]
+        Main.printString(now, ", week: ", week)
 
     {
         # listTaskArgs = ["-tasks", "-t"]
         # listListsArgs = ["-lists", "-l"]
-        # deleteArgs = ["-delete", "-d"]
+        # deleteArgs = ["-delete", "-del"]
         # checkArgs = ["-check", "-c", "-x"]
         # switchArgs = ["-switch", "-s"]
         # insertArgs = ["-insert", "-i"]
         # setListArgs = ["-setList", "-sl"]
         # editArgs = ["-edit", "-e"]
+        # dateArgs = ["-date", "-d"]
         # helpArgs = ["-help", "-h"]
         # testArgs = ["-test"]
     }
@@ -906,8 +922,19 @@ class Main:
         print(str(insertArgs) + "+ number + number: inserts the task (first number) into position of the second number.")
         print(str(setListArgs) + ": string: sets the current task list to the string given.")
         print(str(editArgs) + ": opens a text file where you can edit the contents of the list.")
+        print(str(dateArgs) + ": prints local date information.")
         print(str(helpArgs) + ": prints this information about input arguments.")
         print(str(testArgs) + ": runs unit tests and prints the result.")
-            
+
+    def printString(*args):
+        """
+        Concats all argumetns and prints them as string. \n\n
+        I thought I had implemented this already. If anyone has seen this function before in my projects please let me know.
+        """
+        res = ""
+        for e in args:
+            res += str(e)
+        print(res)
+
 if __name__ == "__main__":
     Main.main()
