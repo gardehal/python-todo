@@ -4,6 +4,7 @@ import os
 import datetime
 import calendar
 
+from util import *
 import tests
 
 os.system("")
@@ -729,11 +730,35 @@ class Main:
                     taskArrayIndex += 1
                 
                 incI = index + 1
-                displayIndex = str(incI) if incI > 99 else "  " + str(incI) if incI < 10 else " " + str(incI) # Index numbers, could have 001 .. 010 .. 100 etc. 
-                printArray.append(displayIndex + " - " + str(taskCompleted) + str(taskReset) + " - " + str(taskText))
+                displayIndex = str(incI) if incI > 99 else "  " + str(incI) if incI < 10 else " " + str(incI) # Index numbers, could have 001 .. 010 .. 100 etc.
+                
+                # Every even number task is slightly more gray to make it easier to tell lines appart
+                # toAppend = displayIndex + " - " + str(taskCompleted) + str(taskReset) + " - " + str(taskText)
+                # if(int(displayIndex) % 2 == 0):
+                #     toAppend = Util.wrapColor(toAppend, "\x1b[1;30;40m")
+
+                    
+                # As above, every even nimber line is darker, and "Is done?" yes/no with * is green when yes, red when no.
+                toAppend = ""
+                if(int(displayIndex) % 2 == 0):
+                    toAppend += Util.wrapColor(displayIndex, "\x1b[1;30;40m")
+                else:
+                    toAppend += displayIndex
+
+                if(completedNumber == 1):
+                    toAppend += " - " + Util.wrapColor(str(taskCompleted) + str(taskReset), 2)
+                else:
+                    toAppend += " - " + Util.wrapColor(str(taskCompleted) + str(taskReset), 4)
+
+                if(int(displayIndex) % 2 == 0):
+                    toAppend += Util.wrapColor(" - " + str(taskText), "\x1b[1;30;40m")
+                else:
+                    toAppend += " - " + str(taskText)
+                
+                printArray.append(toAppend)
             except Exception as e:
-                # print("\nformatPrintList error: ")
-                # print(e)
+                print("\nformatPrintList error: ")
+                print(e)
 
                 # Malformed line, attempt to fix it, if it's empty, remove it.
                 taskLine = str(tasks[index].rstrip())
@@ -878,7 +903,7 @@ class Main:
         """
         now = datetime.datetime.now()
         week = datetime.date(now.year, now.month, now.day).isocalendar()[1]
-        Main.printString(now, ", week: ", week)
+        Util.sPrint(now, ", week: ", week)
 
     {
         # listTaskArgs = ["-tasks", "-t"]
@@ -925,16 +950,6 @@ class Main:
         print(str(dateArgs) + ": prints local date information.")
         print(str(helpArgs) + ": prints this information about input arguments.")
         print(str(testArgs) + ": runs unit tests and prints the result.")
-
-    def printString(*args):
-        """
-        Concats all argumetns and prints them as string. \n\n
-        I thought I had implemented this already. If anyone has seen this function before in my projects please let me know.
-        """
-        res = ""
-        for e in args:
-            res += str(e)
-        print(res)
 
 if __name__ == "__main__":
     Main.main()
