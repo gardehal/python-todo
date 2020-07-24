@@ -3,6 +3,7 @@ import os
 import shutil
 import datetime
 
+from util import *
 import todo
 
 testDirectoryName = "test-tasks"
@@ -233,12 +234,17 @@ class Tests:
         Tests.printTestResult(testIncrementResetDateTimeTimeNonIntRes, "testIncrementResetDateTimeTimeNonInt")
         Tests.printTestResult(testIncrementResetDateTimeIncrementValueRes, "testIncrementResetDateTimeIncrementValue")
 
-        print("\n" + ("All tests passed." if finalRes == 0 else (str(finalRes) + " test(s) failed.")))
+        allPassed = Util.wrapColor("All tests passed.", "OKGREEN")
+        someFailed = Util.wrapColor((str(finalRes) + " test(s) failed."), "FAIL")
+
+        print("\n" + (allPassed if finalRes == 0 else someFailed))
         if(useBeforeAfter == 0):
             print("If some tests fail, try to run with before/after methods enabled, they are currently not; \n\t$ python todo.py -test")
 
     def printTestResult(result, testName):
-        resultString = ("Passed\t\t" if result == 0 else "\tFailed\t")
+        passedText = Util.wrapColor("Passed\t\t", "OKGREEN")
+        failedText = Util.wrapColor("\tFailed\t", "FAIL")
+        resultString = (passedText if result == 0 else failedText)
         print(resultString + " - " + testName)
 
     def before(useBeforeAfter):
