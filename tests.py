@@ -22,10 +22,14 @@ class Tests:
         """
 
         # For checking individual tests
-        # testIndividualRes = Tests.testFormatTaskListReset()
+        # Tests.after(useBeforeAfter)
+        # testTemp1 = Tests.testFormatTaskListReset()
+        # Tests.after(useBeforeAfter)
+        # testTemp2 = Tests.testFormatPrintListNormalFormat()
         # Tests.after(useBeforeAfter)
         
-        # Tests.printTestResult(testIndividualRes, "testIndividual")
+        # Tests.printTestResult(testTemp1, "testTemp1")
+        # Tests.printTestResult(testTemp2, "testTemp2")
         # quit()
 
         if(useBeforeAfter == 0):
@@ -1573,13 +1577,13 @@ class Tests:
 
         # Format is:
         # [leading zeros][index] - ["Yes"/"No "][" "/"*"] - [task]
-        firstTaskFormat = "  1" + columnSeparator + "No  " + columnSeparator + firstTaskText
-        secondTaskFormat = "  2" + columnSeparator + "Yes " + columnSeparator + secondTaskText
+        firstTaskFormat = "  1" + columnSeparator + Util.wrapColor("No  ", "FAIL") + columnSeparator + firstTaskText
+        secondTaskFormat = Util.wrapColor("  2" + columnSeparator, "GRAY") + Util.wrapColor("Yes ", "OKGREEN") + Util.wrapColor(columnSeparator + secondTaskText, "GRAY")
 
         # When the method formatPrintList was changed to parse line into array, this test failed. Removing trailing whitespace makes it pass, 
         # which is understandable for the first line (rstrip removes the newline), but for some reason the second line needs to be rstripped too for the test to pass, 
         # though there is no newline or trailing whitespace in the file. This should not be the case in theory, but it is de facto.
-        formatCheck = len(formatRes) == 2 and formatRes[0].rstrip() == firstTaskFormat and formatRes[1].rstrip() == secondTaskFormat
+        formatCheck = len(formatRes) == 2 and formatRes[0].rstrip() == firstTaskFormat.rstrip() and formatRes[1].rstrip() == secondTaskFormat.rstrip()
         
         fileRes = Tests.readFile(testTaskList, testDirectoryName)
 
@@ -1737,7 +1741,7 @@ class Tests:
         lineSplit = formatRes[0].split()
         lineRecreation = lineSplit[5] + " " + lineSplit[6]
 
-        formatResCheck = (len(formatRes) == 1 and lineSplit[2] == "No" and lineRecreation == task)
+        formatResCheck = (len(formatRes) == 1 and lineSplit[2] + Util.colors["ENDC"] == Util.wrapColor("No", "FAIL") and lineRecreation == task)
 
         # Check file after
         fileResAfter = Tests.readFile(testTaskList, testDirectoryName)

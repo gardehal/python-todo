@@ -13,6 +13,7 @@ listListsArgs = ["-lists", "-l"]
 addArgs = ["-add", "-a"]
 deleteArgs = ["-delete", "-del"]
 checkArgs = ["-check", "-c", "-x"]
+editResetArgs = ["-editreset", "-er"]
 switchArgs = ["-switch", "-s"]
 insertArgs = ["-insert", "-i"]
 setListArgs = ["-setlist", "-sl"]
@@ -75,79 +76,27 @@ class Main:
                 task = sys.argv[argIndex + 1]
 
                 # Pick up reset args if there are any
-                resetInterval = None
+                resetArgs = []
                 resetDateTime = None
                 totalResetTime = None
                 optionalArgIndex = 0
 
-                # Interval
+                # Pick up args for reset, must not start with "-"
                 if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
-                    useDefaultMultiplier = True
-                    totalResetTime = 0    
                     intervalIndex = argIndex + 2
                     while(intervalIndex < argC):
-                        # If next argument is a flag (-xyz) or not a recognized increment argument, break loop, use useDefaultMultiplier
-                        # Notice the decrementation of intervalIndex so the date arguments are not skipped
-                        if(sys.argv[intervalIndex][0] == "-" or sys.argv[intervalIndex][0] != "s" and sys.argv[intervalIndex][0] != "h"  
-                        and sys.argv[intervalIndex][0] != "d"  and sys.argv[intervalIndex][0] != "w"  and sys.argv[intervalIndex][0] != "m"):
-                            intervalIndex -= 1
-                            break
-
-                        if(sys.argv[intervalIndex][0] == "s"):
-                            useDefaultMultiplier = False
-                            totalResetTime += int(sys.argv[intervalIndex][1:])
-                            intervalIndex += 1
-                            continue
-
-                        if(sys.argv[intervalIndex][0] == "h"):
-                            useDefaultMultiplier = False
-                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60
-                            intervalIndex += 1
-                            continue
-                        
-                        elif(sys.argv[intervalIndex][0] == "d"):
-                            useDefaultMultiplier = False
-                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60 * 24
-                            intervalIndex += 1
-                            continue
-                        
-                        elif(sys.argv[intervalIndex][0] == "w"):
-                            useDefaultMultiplier = False
-                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60 * 24 * 7
-                            intervalIndex += 1
-                            continue
-                        
-                        # 30 / 31?
-                        elif(sys.argv[intervalIndex][0] == "m"):
-                            useDefaultMultiplier = False
-                            totalResetTime += int(sys.argv[intervalIndex][1:]) * 60 * 60 * 24 * 30
-                            intervalIndex += 1
-                            continue
-                        
-                        else:
-                            print("Interval argument not recognized " + sys.argv[intervalIndex] + ". Quitting.")
-                            quit()
-
+                        if(sys.argv[intervalIndex][0] != "-"):
+                            resetArgs.append(sys.argv[intervalIndex])
                         intervalIndex += 1
                         
-                    # Interval arguments finished, increment optionalArgIndex so we don't have to reiterate over the same arguments
-                    optionalArgIndex += intervalIndex
+                    validatedReset = Main.validateResetValues(resetArgs)
+                    if(validatedReset == None):
+                        quit()
 
-                    # Use useDefaultMultiplier which is hours of no letter is given in the interval argument
-                    if(useDefaultMultiplier and argC > optionalArgIndex + 1 and sys.argv[optionalArgIndex + 1][0] != "-"):
-                        try:
-                            totalResetTime += int(sys.argv[optionalArgIndex + 1]) * 60 * 60
-                            optionalArgIndex += 1
-                        except Exception as e:
-                            print("Error getting reset interval time from argument " + sys.argv[optionalArgIndex + 1])
-                            print("Must be \"h\", \"d\", \"w\", \"m\", or \"none\".")
-                            quit()
+                    totalResetTime = validatedReset.totalResetTime
+                    resetDateTime = validatedReset.resetDateTime
 
-                    # Date
-                    if(argC > optionalArgIndex + 1 and sys.argv[optionalArgIndex + 1][0] != "-"):
-                        resetDateTime = sys.argv[optionalArgIndex + 1]
-                        optionalArgIndex += 1
-                        
+                    optionalArgIndex += validatedReset.length + 2
                 else:
                     optionalArgIndex += 2
 
@@ -204,6 +153,17 @@ class Main:
                 elif(nChecks is 1 and finalRes):
                     print("Successfully checked task.")
 
+                continue
+
+            # Edit reset values for a task
+            elif(arg in editResetArgs):
+                if(argC - argIndex < 2):
+                    print("Too few arguments to edit reset value, need at least 1: tasknumber (int), resetInterval (optional), reset date (optional, must be \"[hour]:[day]-[month]-[year]\")")
+                    quit()
+                
+                # TODO
+
+                argIndex += 3
                 continue
 
             # Insert a task into a position
@@ -741,19 +701,17 @@ class Main:
                 # As above, every even nimber line is darker, and "Is done?" yes/no with * is green when yes, red when no.
                 toAppend = ""
                 if(int(displayIndex) % 2 == 0):
-                    toAppend += Util.wrapColor(displayIndex, "\x1b[1;30;40m")
+                    toAppend += Util.wrapColor((displayIndex + " - "), "GRAY")
                 else:
-                    toAppend += displayIndex
+                    toAppend += displayIndex + " - "
 
-                if(completedNumber == 1):
-                    toAppend += " - " + Util.wrapColor(str(taskCompleted) + str(taskReset), 2)
-                else:
-                    toAppend += " - " + Util.wrapColor(str(taskCompleted) + str(taskReset), 4)
+                completedColorCode = ("OKGREEN" if completedNumber == 1 else "FAIL")
+                toAppend += Util.wrapColor(str(taskCompleted) + str(taskReset), completedColorCode)
 
                 if(int(displayIndex) % 2 == 0):
-                    toAppend += Util.wrapColor(" - " + str(taskText), "\x1b[1;30;40m")
+                    toAppend += Util.wrapColor(" - " + str(taskText.rstrip()), "GRAY")
                 else:
-                    toAppend += " - " + str(taskText)
+                    toAppend += " - " + str(taskText.rstrip())
                 
                 printArray.append(toAppend)
             except Exception as e:
@@ -905,6 +863,76 @@ class Main:
         week = datetime.date(now.year, now.month, now.day).isocalendar()[1]
         Util.sPrint(now, ", week: ", week)
 
+    def validateResetValues(resetArgs):
+        if(resetArgs == None or len(resetArgs) == 0):
+            print("Reset arguments are empty.")
+            return None
+
+        # Interval
+        useDefaultMultiplier = True
+        resetDateTime = None
+        totalResetTime = 0
+        intervalIndex = 0
+        while(intervalIndex < len(resetArgs)):            
+            if(resetArgs[intervalIndex][0] == "-" or resetArgs[intervalIndex][0] != "s" and resetArgs[intervalIndex][0] != "h"  
+            and resetArgs[intervalIndex][0] != "d"  and resetArgs[intervalIndex][0] != "w"  and resetArgs[intervalIndex][0] != "m"):
+                # print("Invalid reset reset valiue: " + resetArgs[intervalIndex + 1])
+                # print("Must be \"h\", \"d\", \"w\", \"m\", or \"none\".")
+                intervalIndex -= 1
+                break
+
+            if(resetArgs[intervalIndex][0] == "s"):
+                useDefaultMultiplier = False
+                totalResetTime += int(resetArgs[intervalIndex][1:])
+                intervalIndex += 1
+                continue
+
+            if(resetArgs[intervalIndex][0] == "h"):
+                useDefaultMultiplier = False
+                totalResetTime += int(resetArgs[intervalIndex][1:]) * 60 * 60
+                intervalIndex += 1
+                continue
+            
+            elif(resetArgs[intervalIndex][0] == "d"):
+                useDefaultMultiplier = False
+                totalResetTime += int(resetArgs[intervalIndex][1:]) * 60 * 60 * 24
+                intervalIndex += 1
+                continue
+            
+            elif(resetArgs[intervalIndex][0] == "w"):
+                useDefaultMultiplier = False
+                totalResetTime += int(resetArgs[intervalIndex][1:]) * 60 * 60 * 24 * 7
+                intervalIndex += 1
+                continue
+            
+            # 30 / 31?
+            elif(resetArgs[intervalIndex][0] == "m"):
+                useDefaultMultiplier = False
+                totalResetTime += int(resetArgs[intervalIndex][1:]) * 60 * 60 * 24 * 30
+                intervalIndex += 1
+                continue
+            
+            else:
+                print("Interval argument not recognized " + resetArgs[intervalIndex] + ".")
+                return None
+
+        # Use useDefaultMultiplier which is hours of no letter is given in the interval argument
+        if(useDefaultMultiplier and resetArgs[intervalIndex + 1][0] != "-"):
+            try:
+                totalResetTime += int(resetArgs[intervalIndex + 1]) * 60 * 60
+                intervalIndex += 1
+            except Exception as e:
+                print("Error getting reset interval time from argument " + resetArgs[intervalIndex + 1])
+                print("Must be \"h\", \"d\", \"w\", \"m\", or \"none\".")
+                return None
+
+        # Date
+        if(len(resetArgs) > intervalIndex + 1 and resetArgs[intervalIndex + 1][0] != "-"):
+            resetDateTime = resetArgs[intervalIndex + 1]
+            intervalIndex += 1
+
+        return type('',(object,),{"totalResetTime": totalResetTime,"resetDateTime": resetDateTime, "length": len(resetArgs)})()
+
     {
         # listTaskArgs = ["-tasks", "-t"]
         # listListsArgs = ["-lists", "-l"]
@@ -953,3 +981,7 @@ class Main:
 
 if __name__ == "__main__":
     Main.main()
+
+# class validatedResetObject:
+#     totalResetTime = None
+#     resetDateTime = None

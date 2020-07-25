@@ -47,6 +47,7 @@ class Util:
             return float(n).is_integer()
 
     colors = {
+        "GRAY": "\x1b[1;30;40m",
         "HEADER": "\x1b[95m",
         "OKBLUE": "\x1b[94m",
         "OKGREEN": "\x1b[92m",
