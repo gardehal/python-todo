@@ -160,10 +160,31 @@ class Main:
                 if(argC - argIndex < 2):
                     print("Too few arguments to edit reset value, need at least 1: tasknumber (int), resetInterval (optional), reset date (optional, must be \"[hour]:[day]-[month]-[year]\")")
                     quit()
-                
-                # TODO
 
-                argIndex += 3
+                taskNumber = int(sys.argv[argIndex + 1]) - 1
+
+                # Pick up reset args if there are any
+                resetArgs = []
+                optionalArgIndex = 2
+                validatedReset = None
+
+                # Pick up args for reset, must not start with "-"
+                if(argC > argIndex + 2 and sys.argv[argIndex + 2][0] != "-"):
+                    intervalIndex = argIndex + 2
+                    while(intervalIndex < argC):
+                        if(sys.argv[intervalIndex][0] != "-"):
+                            resetArgs.append(sys.argv[intervalIndex])
+                        intervalIndex += 1
+                        
+                    validatedReset = Main.validateResetValues(resetArgs)
+
+                    optionalArgIndex += validatedReset.length
+
+                # All optional arguments and the recognized permutations have been dealt with, finally run the method
+                editRes = Main.editReset(taskNumber, taskList, taskListPath, validatedReset)
+                print("Edit task reset " + ("was successful." if editRes else "failed."))
+
+                argIndex += optionalArgIndex
                 continue
 
             # Insert a task into a position
@@ -447,6 +468,71 @@ class Main:
             uselessVar = True
 
         return res
+
+    def editReset(taskNumber, taskList, taskListPath, validatedResetObject):
+        """
+        Method for editing reset data for a task \n
+        int taskNumber \n
+        string taskList \n
+        string taskListPath \n
+        object validatedResetObject (nullable)
+        """
+
+        fullPath = Main.getFullFilePath(taskListPath, taskList)
+
+        fileArray = []
+        # Read
+        try:
+            with open(fullPath, "r") as readFile:
+                for line in readFile:
+                    fileArray.append(line)
+
+            readFile.close()
+        except Exception as e:
+            print("\neditReset readFile error:")
+            print(e)
+            return False
+
+        if(len(fileArray) == 0):
+            print("The task list " + taskList + " is empty.")
+            quit()
+
+        if(taskNumber < 0 or taskNumber > (len(fileArray) - 1)):
+            print("Invalid task number, for task list " + taskList + " minimum is 1 and maximum is " + str(len(fileArray)))
+            return False
+
+        # Edit reset data, if validatedResetObject is null, remove
+        editedTaskLine = ""
+        taskLineSplit = fileArray[taskNumber].split(" ")
+        taskComplete = taskLineSplit[0]
+        
+        taskReset = taskLineSplit[1] if taskLineSplit[1][0] == "!" else None
+        taskText = " ".join(taskLineSplit[2:]) if taskLineSplit[1][0] == "!" else " ".join(taskLineSplit[1:])
+        
+        if(validatedResetObject == None):
+            editedTaskLine = taskComplete + " " + taskText
+        # elif():
+
+        fileArray[taskNumber] = editedTaskLine
+
+        # After modifying array, remove newline and trailing white space, if it exists
+        if(len(fileArray) > 1):
+            fileArray[len(fileArray) - 1] = fileArray[len(fileArray) - 1].rstrip()
+
+        # Write back to array
+        try:
+            with open(fullPath, "w") as writeFile:
+                index = 0
+                while index < len(fileArray):
+                    writeFile.write(fileArray[index])
+                    index += 1
+
+            writeFile.close() 
+            return True
+        except Exception as e:
+            print("\neditReset writeFile error:")
+            print(e)
+            return False
 
     def editTask(taskRefrence, taskList, taskListPath, action, filePermissions = "w"):
         """
@@ -932,20 +1018,6 @@ class Main:
             intervalIndex += 1
 
         return type('',(object,),{"totalResetTime": totalResetTime,"resetDateTime": resetDateTime, "length": len(resetArgs)})()
-
-    {
-        # listTaskArgs = ["-tasks", "-t"]
-        # listListsArgs = ["-lists", "-l"]
-        # deleteArgs = ["-delete", "-del"]
-        # checkArgs = ["-check", "-c", "-x"]
-        # switchArgs = ["-switch", "-s"]
-        # insertArgs = ["-insert", "-i"]
-        # setListArgs = ["-setList", "-sl"]
-        # editArgs = ["-edit", "-e"]
-        # dateArgs = ["-date", "-d"]
-        # helpArgs = ["-help", "-h"]
-        # testArgs = ["-test"]
-    }
 
     def printHelp():
         """
