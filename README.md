@@ -84,4 +84,4 @@ As the project comes to an ending, I think back to what I have accomplished and 
 - check for resets before checking? (currently: when checking an item after it reset without printing will be not check anything, as the printing and resetting wil overwrite the check)
 - line 1569 in tests, simplified formatting as print line could be support function 
 - test could use strip to remove color-string for termial display color
-- ![resetminutes]Z[date]T[time] is wrong, correct format is [date]T[time]Z? where Z is zero hour offset, change format to [date]T[time]Z[resetminutes] or ![date]T[time]-[resetminutes]
+- ![resetminutes]Z[date]T[time] is wrong, correct format is [date]T[time]Z? where Z is zero hour offset, change format to [date]T[time]Z[resetminutes] or ![date]T[time]R[resetminutes]

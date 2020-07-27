@@ -314,23 +314,16 @@ class Main:
 
         return None
 
-    def addTask(task, taskList, taskListPath, resetInterval = None, resetDateTime = None):
+    def getResetString(resetInterval = None, resetDateTime = None):
         """
-        A method for saving/adding a task "task" to the list "taskList" in directory "taskListPath". If the optional argument resetInterval (int, seconds) is given,
-        the format method will reset the tasks completeion status after the resetInterval period, from the datetime when the task was added.
-        If the argument resetDateTime (datetime) is also given, the reset will trigger on the interval from that datetime. \n
-        string task \n
-        string taskList \n
-        string taskListPath \n
+        Get reset string formatted ![resetminutes]Z[date]T[time] / ![date]T[time]R[resetminutes] \n
         int resetInterval \n
-        Datetime resetDateTime
+        ?? resetDateTime
         """
 
-        if(task.rstrip() == ""):
-            return False
-
-        resetString = ""
-        incrementedRestString = ""
+        resetString = None
+        sanitizedResetInterval = None
+        sanitizedResetDateTime = None
 
         # Deal with resetInterval and resetDateTime
         if(resetInterval != None):
@@ -343,8 +336,8 @@ class Main:
             except Exception as e:
                 print("\naddTask reset arguments error:")
                 print(e)
-                return False
-            
+                return None
+                
             # hh:dd-mm-yyyy
             if(resetDateTime != None):
                 try:
@@ -358,7 +351,7 @@ class Main:
                     hourDateSplit = resetDateTime.split(":")
                     hour = int(hourDateSplit[0])
                     if(hour < 0 or hour > 23):
-                        return False
+                        return None
 
                     dateArray = []
                     if(len(hourDateSplit) > 1):
@@ -376,7 +369,7 @@ class Main:
                         if(dateArray[2] >= now.year and dateArray[2] < (now.year + 5)):
                             year = dateArray[2]
                         else: 
-                            return False
+                            return None
                     else:
                         year = now.year
 
@@ -385,7 +378,7 @@ class Main:
                         if(dateArray[1] > 0 and dateArray[1] < 13):
                             month = dateArray[1]
                         else: 
-                            return False
+                            return None
                     else:
                         month = now.month
                         
@@ -396,7 +389,7 @@ class Main:
                         if(dateArray[0] > 0 and dateArray[0] < (maxDate + 1)):
                             day = dateArray[0]
                         else: 
-                            return False
+                            return None
                     else:
                         day = now.day
 
@@ -406,7 +399,7 @@ class Main:
                 except Exception as e:
                     print("\naddTask datetime arguments error:")
                     print(e)
-                    return False
+                    return None
                 
             else:
                 now = datetime.datetime.now()
@@ -414,14 +407,36 @@ class Main:
 
             # interval and datetime format:
             # !interval%datetime
-            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T") + " "
+            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T")
+            # resetString = "!" + str(sanitizedResetDateTime).replace(" ", "T") + "R" + str(sanitizedResetInterval)
+            
+        return type('',(object,),{
+            "full": resetString,
+            "interval": sanitizedResetInterval, 
+            "datetime": sanitizedResetDateTime
+            })()
 
-            # Increment resetString before adding it. Unnecessary? 
-            # incrementedRestString = str(Main.incrementResetDateTime(resetString)[0]) + " "
-            # if(incrementedRestString.strip() == None):
-            #     return False
+    def addTask(task, taskList, taskListPath, resetInterval = None, resetDateTime = None):
+        """
+        A method for saving/adding a task "task" to the list "taskList" in directory "taskListPath". If the optional argument resetInterval (int, seconds) is given,
+        the format method will reset the tasks completeion status after the resetInterval period, from the datetime when the task was added.
+        If the argument resetDateTime (datetime) is also given, the reset will trigger on the interval from that datetime. \n
+        string task \n
+        string taskList \n
+        string taskListPath \n
+        int resetInterval \n
+        Datetime resetDateTime
+        """
 
-            print("Task will reset every " + str(sanitizedResetInterval/60/60) + " hours from the date and time " + str(sanitizedResetDateTime))
+        if(task.rstrip() == ""):
+            return False
+
+        resetString = ""
+        resetObj = Main.getResetString(resetInterval, resetDateTime)
+        if(resetObj == None):
+            return False
+        elif(resetObj.full != None):
+            resetString = str(resetObj.full) + " "
 
         loadTaskRes = Main.loadFile(taskList, taskListPath)
         fileExists = True if len(loadTaskRes) > 0 else False
@@ -432,7 +447,7 @@ class Main:
             os.mkdir(taskListDirectory)
 
         fullPath = Main.getFullFilePath(taskListPath, taskList)
-        taskLine = ("\n" if fileExists else "") + "0 " + resetString + task
+        taskLine = ("\n" if fileExists else "") + "0 " + resetString + task.lstrip()
 
         try:
             with open(fullPath, "a") as file:
@@ -511,7 +526,9 @@ class Main:
         
         if(validatedResetObject == None):
             editedTaskLine = taskComplete + " " + taskText
-        # elif():
+        else:
+            editedTaskLine = taskComplete + " " + validatedResetObject.datetimex + " " + taskText
+
 
         fileArray[taskNumber] = editedTaskLine
 
@@ -1017,7 +1034,13 @@ class Main:
             resetDateTime = resetArgs[intervalIndex + 1]
             intervalIndex += 1
 
-        return type('',(object,),{"totalResetTime": totalResetTime,"resetDateTime": resetDateTime, "length": len(resetArgs)})()
+        return type('',(object,),{
+            "totalResetTime": totalResetTime,
+            "resetDateTime": resetDateTime, 
+            "length": len(resetArgs), 
+            "datetimex": ("!" + str(totalResetTime) + "Z" + str(resetDateTime)), 
+            "datetime": ("!" + str(resetDateTime) + "Z" + str(totalResetTime))
+            })()
 
     def printHelp():
         """
