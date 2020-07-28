@@ -314,108 +314,6 @@ class Main:
 
         return None
 
-    def getResetString(resetInterval = None, resetDateTime = None):
-        """
-        Get reset string formatted ![resetminutes]Z[date]T[time] / ![date]T[time]R[resetminutes] \n
-        int resetInterval \n
-        ?? resetDateTime
-        """
-
-        resetString = None
-        sanitizedResetInterval = None
-        sanitizedResetDateTime = None
-
-        # Deal with resetInterval and resetDateTime
-        if(resetInterval != None):
-            try:
-                sanitizedResetInterval = int(resetInterval)
-
-                # About 3.8 months limit
-                if(sanitizedResetInterval > 9_999_999 or sanitizedResetInterval < 1):
-                    raise Exception("Invalid interval argument")
-            except Exception as e:
-                print("\naddTask reset arguments error:")
-                print(e)
-                return None
-                
-            # hh:dd-mm-yyyy
-            if(resetDateTime != None):
-                try:
-                    now = datetime.datetime.now()
-                    hour = None
-                    day = None
-                    month = None
-                    year = None
-
-                    # Hour is the minimum expected input for datetime
-                    hourDateSplit = resetDateTime.split(":")
-                    hour = int(hourDateSplit[0])
-                    if(hour < 0 or hour > 23):
-                        return None
-
-                    dateArray = []
-                    if(len(hourDateSplit) > 1):
-                        dateArray = hourDateSplit[1].split("-")
-
-                        # Convert all elements to ints
-                        dateArrayIndex = 0
-                        while(dateArrayIndex < len(dateArray)):
-                            dateArray[dateArrayIndex] = int(dateArray[dateArrayIndex])
-                            dateArrayIndex += 1
-
-                    # Note: The inverted structure of year, month, day is so we can use year and month to get maxDate.
-                    # Get year from input, if none use current
-                    if(len(dateArray) > 2 and dateArray[2]):
-                        if(dateArray[2] >= now.year and dateArray[2] < (now.year + 5)):
-                            year = dateArray[2]
-                        else: 
-                            return None
-                    else:
-                        year = now.year
-
-                    # Get month from input, if none use current
-                    if(len(dateArray) > 1 and dateArray[1]):
-                        if(dateArray[1] > 0 and dateArray[1] < 13):
-                            month = dateArray[1]
-                        else: 
-                            return None
-                    else:
-                        month = now.month
-                        
-                    # Get day from input, if none use current
-                    # Thanks to https://stackoverflow.com/questions/42950/get-last-day-of-the-month for the line
-                    maxDate = calendar.monthrange(year, month)[1]
-                    if(len(dateArray) > 0 and dateArray[0]):
-                        if(dateArray[0] > 0 and dateArray[0] < (maxDate + 1)):
-                            day = dateArray[0]
-                        else: 
-                            return None
-                    else:
-                        day = now.day
-
-                    # Year, month, day, hour from users input or current, minute, seconds, etc. default 0
-                    sanitizedResetDateTime = datetime.datetime(year, month, day, hour)
-
-                except Exception as e:
-                    print("\naddTask datetime arguments error:")
-                    print(e)
-                    return None
-                
-            else:
-                now = datetime.datetime.now()
-                sanitizedResetDateTime = datetime.datetime(now.year, now.month, now.day, now.hour)
-
-            # interval and datetime format:
-            # !interval%datetime
-            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T")
-            # resetString = "!" + str(sanitizedResetDateTime).replace(" ", "T") + "R" + str(sanitizedResetInterval)
-            
-        return type('',(object,),{
-            "full": resetString,
-            "interval": sanitizedResetInterval, 
-            "datetime": sanitizedResetDateTime
-            })()
-
     def addTask(task, taskList, taskListPath, resetInterval = None, resetDateTime = None):
         """
         A method for saving/adding a task "task" to the list "taskList" in directory "taskListPath". If the optional argument resetInterval (int, seconds) is given,
@@ -527,8 +425,8 @@ class Main:
         if(validatedResetObject == None):
             editedTaskLine = taskComplete + " " + taskText
         else:
-            editedTaskLine = taskComplete + " " + validatedResetObject.datetimex + " " + taskText
-
+            resetString = Main.getResetString(validatedResetObject.totalResetTime, validatedResetObject.resetDateTime)
+            editedTaskLine = taskComplete + " " + resetString.full + " " + taskText
 
         fileArray[taskNumber] = editedTaskLine
 
@@ -1040,6 +938,108 @@ class Main:
             "length": len(resetArgs), 
             "datetimex": ("!" + str(totalResetTime) + "Z" + str(resetDateTime)), 
             "datetime": ("!" + str(resetDateTime) + "Z" + str(totalResetTime))
+            })()
+    
+    def getResetString(resetInterval = None, resetDateTime = None):
+        """
+        Get reset string formatted ![resetminutes]Z[date]T[time] / ![date]T[time]R[resetminutes] \n
+        int resetInterval \n
+        ?? resetDateTime
+        """
+
+        resetString = None
+        sanitizedResetInterval = None
+        sanitizedResetDateTime = None
+
+        # Deal with resetInterval and resetDateTime
+        if(resetInterval != None):
+            try:
+                sanitizedResetInterval = int(resetInterval)
+
+                # About 3.8 months limit
+                if(sanitizedResetInterval > 9_999_999 or sanitizedResetInterval < 1):
+                    raise Exception("Invalid interval argument")
+            except Exception as e:
+                print("\naddTask reset arguments error:")
+                print(e)
+                return None
+                
+            # hh:dd-mm-yyyy
+            if(resetDateTime != None):
+                try:
+                    now = datetime.datetime.now()
+                    hour = None
+                    day = None
+                    month = None
+                    year = None
+
+                    # Hour is the minimum expected input for datetime
+                    hourDateSplit = resetDateTime.split(":")
+                    hour = int(hourDateSplit[0])
+                    if(hour < 0 or hour > 23):
+                        return None
+
+                    dateArray = []
+                    if(len(hourDateSplit) > 1):
+                        dateArray = hourDateSplit[1].split("-")
+
+                        # Convert all elements to ints
+                        dateArrayIndex = 0
+                        while(dateArrayIndex < len(dateArray)):
+                            dateArray[dateArrayIndex] = int(dateArray[dateArrayIndex])
+                            dateArrayIndex += 1
+
+                    # Note: The inverted structure of year, month, day is so we can use year and month to get maxDate.
+                    # Get year from input, if none use current
+                    if(len(dateArray) > 2 and dateArray[2]):
+                        if(dateArray[2] >= now.year and dateArray[2] < (now.year + 5)):
+                            year = dateArray[2]
+                        else: 
+                            return None
+                    else:
+                        year = now.year
+
+                    # Get month from input, if none use current
+                    if(len(dateArray) > 1 and dateArray[1]):
+                        if(dateArray[1] > 0 and dateArray[1] < 13):
+                            month = dateArray[1]
+                        else: 
+                            return None
+                    else:
+                        month = now.month
+                        
+                    # Get day from input, if none use current
+                    # Thanks to https://stackoverflow.com/questions/42950/get-last-day-of-the-month for the line
+                    maxDate = calendar.monthrange(year, month)[1]
+                    if(len(dateArray) > 0 and dateArray[0]):
+                        if(dateArray[0] > 0 and dateArray[0] < (maxDate + 1)):
+                            day = dateArray[0]
+                        else: 
+                            return None
+                    else:
+                        day = now.day
+
+                    # Year, month, day, hour from users input or current, minute, seconds, etc. default 0
+                    sanitizedResetDateTime = datetime.datetime(year, month, day, hour)
+
+                except Exception as e:
+                    print("\naddTask datetime arguments error:")
+                    print(e)
+                    return None
+                
+            else:
+                now = datetime.datetime.now()
+                sanitizedResetDateTime = datetime.datetime(now.year, now.month, now.day, now.hour)
+
+            # interval and datetime format:
+            # !interval%datetime
+            resetString = "!" + str(sanitizedResetInterval) + "Z" + str(sanitizedResetDateTime).replace(" ", "T")
+            # resetString = "!" + str(sanitizedResetDateTime).replace(" ", "T") + "R" + str(sanitizedResetInterval)
+            
+        return type('',(object,),{
+            "full": resetString,
+            "interval": sanitizedResetInterval, 
+            "datetime": sanitizedResetDateTime
             })()
 
     def printHelp():

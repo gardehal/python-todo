@@ -53,6 +53,7 @@ As the project comes to an ending, I think back to what I have accomplished and 
 8. Minor issues and improvements
 9. Documentation
 10. Git structure
+11. Continued development
 ---
 1. Overall I think the commenting of the code has improved a lot, mostly due to the function comments which shows up (at least in Visual Studio Code) when you hover the function. I found it is also a good way give more information about arguments that may not show up otherwise. I will continue to use this and improve on the information given, so the comments will be more useful.
 2. During this project I put more effort into limiting the error that a user may inflict though standard usage and also file tampering or even corruption of the file. This has been a mixed bag, as sometime I see a sea of if-statements wondering if it is too much. Could be streamlined or defer error catching. This should improve as I delegate tasks to other, smaller methods.
@@ -64,6 +65,7 @@ As the project comes to an ending, I think back to what I have accomplished and 
 8. When doing the project I came up with more improvements as I went along, as I did not pre-plan or structure the project. For such a small project I don't see any problems with this, but the natural result is that the scope grows a little every day. I could go on and make the ultimate todo program, but by now it's a reasonable size. There are minor improvements I have written down in the TODO section, which I may or may not do sometime in the future.
 9. I should work on my documentation, cite more reasons and patterns from the code. Even some simple visual models or more detailed examples could be useful for people with problems that are not addressed by the Help section. Easy to do later.
 10. I intentionally did not try to emulate a more realistic git version as the focus was on the code.
+11. Coming back to the code a bit later I struggle more than usual to pick out where the issues are. I suspect this is partly due to difficulty working with Pythons syntax compared to Java/C#/JS, which I'm more used to. It is also partly due to poor structure in the code on my part, a lot of functionality could and probably should have been moved to decentralized function, a good exaple is the edit and add functionality, which essentially boils down to 1: validate user input, 2: get contents of file, 3: insert data, 4: save file. 1, 2, and 4 should all be separate functions, and the add function calls these methods, and do 3 itself.
  
 ### TODO:
  
