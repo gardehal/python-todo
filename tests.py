@@ -23,9 +23,9 @@ class Tests:
 
         # For checking individual tests
         # Tests.after(useBeforeAfter)
-        # testTemp1 = Tests.testFormatTaskListReset()
+        # testTemp1 = Tests.testAddTaskEmptyList()
         # Tests.after(useBeforeAfter)
-        # testTemp2 = Tests.testFormatPrintListNormalFormat()
+        # testTemp2 = Tests.testAddTaskNoFile()
         # Tests.after(useBeforeAfter)
         
         # Tests.printTestResult(testTemp1, "testTemp1")
