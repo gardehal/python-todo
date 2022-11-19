@@ -132,7 +132,7 @@ class Main:
                 finalRes = True
                 try:
                     while(argIndex < argC):
-                        if(sys.argv[argIndex][0] is "-"):
+                        if(sys.argv[argIndex][0] == "-"):
                             raise StopIteration
 
                         nChecks += 1
@@ -150,7 +150,7 @@ class Main:
 
                 if(nChecks > 1 and finalRes):
                     print("Successfully checked " + ("all" if finalRes else "some") + " tasks.")
-                elif(nChecks is 1 and finalRes):
+                elif(nChecks == 1 and finalRes):
                     print("Successfully checked task.")
 
                 continue
@@ -465,9 +465,7 @@ class Main:
         # Read
         try:
             with open(fullPath, "r") as readFile:
-                for line in readFile:
-                    fileArray.append(line)
-
+                fileArray = readFile.readlines()
             readFile.close()
         except Exception as e:
             print("\neditTask readFile error:")
